@@ -1,0 +1,19 @@
+{
+    "course": {
+        "title": "Digital Save Up Fund",
+        "description": "Ajarkan anak menabung sejak dini dengan Digital Save Up Fund, agar mereka bisa belajar mengelola uang secara pintar, menyenangkan, dan meraih tujuan mereka di masa depan.",
+        "banner": "https://rey.id/blog/wp-content/uploads/2022/11/akibat-terlalu-lama-main-hp-bagi-anak.jpg"
+    },
+    "videos": [
+        {
+            "title": "Video 1: Judul Video",
+            "description": "Deskripsi singkat tentang video 1 yang mencakup poin-poin penting dari video ini.",
+            "videoId": "dQw4w9WgXcQ"
+        },
+        {
+            "title": "Video 2: Judul Video",
+            "description": "Deskripsi singkat tentang video 2 yang mencakup poin-poin penting dari video ini.",
+            "videoId": "tgbNymZ7vqY"
+        }
+    ]
+}

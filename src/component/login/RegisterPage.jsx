@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import loginImage from '../../assets/login.jpg';
+import registerImage from '../../assets/register.jpg';
 
 const RegisterPage = () => {
   return (
@@ -10,7 +10,7 @@ const RegisterPage = () => {
           <div className="p-12 text-center">
             <div
               className="h-80 w-80 bg-cover bg-center mx-auto"
-              style={{ backgroundImage: `url(${loginImage})` }} 
+              style={{ backgroundImage: `url(${registerImage})` }} 
             >
             </div>
             <h1

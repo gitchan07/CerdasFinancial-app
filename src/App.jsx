@@ -1,12 +1,16 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import TestPage from "./pages/TestPage";
+// import React from 'react';
+import React from "react";
+import Login from "./pages/Login/index";
+import "./index.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* For initiating react router dom This page can be deleted and replaced*/}
-                <Route index element={<TestPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="*" element={<LoginPage />} />
             </Routes>
         </BrowserRouter>
     );

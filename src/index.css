@@ -55,3 +55,29 @@
         font-family: "Nunito Sans", sans-serif;
     }
 }
+
+.font-david-libre {
+  font-family: 'David Libre', serif;
+}
+
+.custom-heading {
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 32px;
+  text-align: left;
+  text-underline-position: from-font;
+  text-decoration-skip-ink: none;
+}
+
+.font-nunito-sans {
+    font-family: 'Nunito Sans', sans-serif;
+}
+
+.custom-subheading {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32.74px;
+    text-align: center;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+}

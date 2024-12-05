@@ -57,11 +57,11 @@ const HomePage = () => {
 
     return (
         <div className="min-h-screen bg-gray-100 p-8 md:p-16">
-            <header className="mb-8 flex items-center justify-between">
+            <header className="mb-20 flex items-center justify-between gap-4 sm:flex-row">
                 <Link href="#" className="flex items-center">
                     <img
                         src="./logo.png"
-                        className="h-16 w-16 md:mr-4"
+                        className="h-12 w-12 sm:h-16 sm:w-16"
                         alt="Cerdas Financial"
                     />
                     <span className="hidden font-bold text-blue-900 md:inline">
@@ -70,21 +70,24 @@ const HomePage = () => {
                 </Link>
 
                 <div className="relative flex items-center gap-4">
-                    <div className="relative">
+                    <div className="relative w-full sm:w-auto">
                         <input
                             type="text"
                             placeholder="Search courses"
                             value={searchTerm}
                             onChange={handleSearch}
-                            className="w-64 rounded-full border border-gray-300 bg-gray-200 p-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 md:w-96"
+                            className="w-full rounded-full border border-gray-300 bg-gray-200 p-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:w-64"
                         />
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-500" />
                     </div>
                     <div className="relative">
                         <img
-                            src={userProfile.photoUrl || "https://via.placeholder.com/40"}
+                            src={
+                                userProfile.photoUrl ||
+                                "https://via.placeholder.com/40"
+                            }
                             alt="User Profile"
-                            className="h-10 w-10 cursor-pointer rounded-full"
+                            className="h-8 w-8 cursor-pointer rounded-full sm:h-10 sm:w-10"
                             onClick={toggleProfileMenu}
                         />
                         {isProfileMenuOpen && (
@@ -102,6 +105,7 @@ const HomePage = () => {
                     </div>
                 </div>
             </header>
+
             <section>
                 <h2 className="mb-4 text-xl font-bold">Recently Viewed</h2>
                 <div className="flex flex-wrap justify-start gap-4">
@@ -110,7 +114,10 @@ const HomePage = () => {
                             key={course.id}
                             name={course.name}
                             description={course.description}
-                            imageUrl={course.imageUrl || "https://via.placeholder.com/300x200"}
+                            imageUrl={
+                                course.imageUrl ||
+                                "https://via.placeholder.com/300x200"
+                            }
                         />
                     ))}
                 </div>
@@ -125,7 +132,10 @@ const HomePage = () => {
                             key={course.id}
                             name={course.name}
                             description={course.description}
-                            imageUrl={course.imageUrl || "https://via.placeholder.com/300x200"}
+                            imageUrl={
+                                course.imageUrl ||
+                                "https://via.placeholder.com/300x200"
+                            }
                         />
                     ))}
                 </div>

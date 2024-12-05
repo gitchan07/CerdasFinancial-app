@@ -1,19 +1,28 @@
 {
-    "course": {
-        "title": "Digital Save Up Fund",
-        "description": "Ajarkan anak menabung sejak dini dengan Digital Save Up Fund, agar mereka bisa belajar mengelola uang secara pintar, menyenangkan, dan meraih tujuan mereka di masa depan.",
-        "banner": "https://rey.id/blog/wp-content/uploads/2022/11/akibat-terlalu-lama-main-hp-bagi-anak.jpg"
-    },
+  "course": {
+    "title": "Course Title",
+    "description": "This is a description of the course or video. It provides detailed information about the content of the video and its purpose in the course. You can add more paragraphs or details as needed. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum ad ipsam molestias id deleniti, iusto, nam tempora amet tenetur eaque sapiente deserunt eum! Ducimus, voluptatem eius? Praesentium animi rerum dicta!",
     "videos": [
-        {
-            "title": "Video 1: Judul Video",
-            "description": "Deskripsi singkat tentang video 1 yang mencakup poin-poin penting dari video ini.",
-            "videoId": "dQw4w9WgXcQ"
-        },
-        {
-            "title": "Video 2: Judul Video",
-            "description": "Deskripsi singkat tentang video 2 yang mencakup poin-poin penting dari video ini.",
-            "videoId": "tgbNymZ7vqY"
-        }
+      {
+        "id": 1,
+        "title": "Video 1",
+        "src": "/asset/videoplayback.mp4"
+      },
+      {
+        "id": 2,
+        "title": "Video 2",
+        "src": "/asset/videoplayback.mp4"
+      },
+      {
+        "id": 3,
+        "title": "Video 3",
+        "src": "/asset/videoplayback.mp4"
+      },
+      {
+        "id": 4,
+        "title": "Video 4",
+        "src": "/asset/videoplayback.mp4"
+      }
     ]
+  }
 }

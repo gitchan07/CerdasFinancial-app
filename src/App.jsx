@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import TestPage from "./pages/TestPage";
-import DetailCourse from "./pages/detail-course/detail-course";
+import DetailCourse from "./pages/detail-course";
 
 function App() {
     return (

@@ -1,33 +1,33 @@
 {
-  "course": {
-    "title": "Course Title",
-    "description": "This is a description of the course or video. It provides detailed information about the content of the video and its purpose in the course. You can add more paragraphs or details as needed. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum ad ipsam molestias id deleniti, iusto, nam tempora amet tenetur eaque sapiente deserunt eum! Ducimus, voluptatem eius? Praesentium animi rerum dicta!",
-    "videos": [
-      {
-        "id": 1,
-        "title": "Video 1",
-        "src": "/asset/videoplayback.mp4"
-      },
-      {
-        "id": 2,
-        "title": "Video 2",
-        "src": "/asset/videoplayback.mp4"
-      },
-      {
-        "id": 3,
-        "title": "Video 3",
-        "src": "/asset/videoplayback.mp4"
-      },
-      {
-        "id": 4,
-        "title": "Video 4",
-        "src": "/asset/videoplayback.mp4"
-      },
-       {
-        "id": 5,
-        "title": "Video 5",
-        "src": "/asset/videoplayback.mp4"
-      }
-    ]
-  }
+    "course": {
+        "title": "Course Title",
+        "description": "This is a description of the course or video. It provides detailed information about the content of the video and its purpose in the course. You can add more paragraphs or details as needed. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum ad ipsam molestias id deleniti, iusto, nam tempora amet tenetur eaque sapiente deserunt eum! Ducimus, voluptatem eius? Praesentium animi rerum dicta!",
+        "videos": [
+            {
+                "id": 1,
+                "title": "Video 1",
+                "url": "https://www.w3schools.com/html/mov_bbb.mp4"
+            },
+            {
+                "id": 2,
+                "title": "Video 2",
+                "url": "https://www.w3schools.com/html/movie.mp4"
+            },
+            {
+                "id": 3,
+                "title": "Video 3",
+                "url": "/asset/videoplayback.mp4"
+            },
+            {
+                "id": 4,
+                "title": "Video 4",
+                "url": "https://www.w3schools.com/html/movie.mp4"
+            },
+            {
+                "id": 5,
+                "title": "Video 5",
+                "url": "https://www.w3schools.com/html/mov_bbb.mp4"
+            }
+        ]
+    }
 }

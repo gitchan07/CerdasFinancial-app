@@ -64,6 +64,8 @@ function Course() {
         }
     }, [selectedVideoIndex]);
 
+    const progress = (currentTime / duration) * 100;
+
     return (
         <div className="max-w-screen flex flex-col items-center justify-center">
             <div
@@ -82,7 +84,7 @@ function Course() {
                             opacity: !isVideoPlaying ? 0.5 : 1,
                             width: "100%",
                             height: "100%",
-                            objectFit: "contain",
+                            objectFit: "fill",
                         }}
                     />
                 </div>
@@ -106,6 +108,13 @@ function Course() {
                         />
                     </div>
                 )}
+
+                <div className="absolute bottom-0 left-0 w-full h-2 bg-gray-300">
+                    <div
+                        style={{ width: `${progress}%` }}
+                        className="h-full bg-blue-600"
+                    />
+                </div>
             </div>
 
             <div className="mt-8 flex w-10/12 flex-row-reverse justify-between gap-10">

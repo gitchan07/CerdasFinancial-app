@@ -7,7 +7,7 @@ function Course() {
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [courseData, setCourseData] = useState("");
-    const [selectedVideoIndex, setSelectedVideoIndex] = useState(0); // Track the selected video index
+    const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
     const videoRef = useRef(null);
 
     const startPauseVideo = () => {
@@ -51,17 +51,16 @@ function Course() {
             });
     }, []);
 
-    // Function to handle video selection from list
     const handleVideoSelect = (index) => {
         setSelectedVideoIndex(index);
-        setIsVideoPlaying(false); // Pause the video when changing
-        videoRef.current.load(); // Reload the video with the new source
-        videoRef.current.currentTime = 0; // Reset the video to start from the beginning
+        setIsVideoPlaying(false); 
+        videoRef.current.load(); 
+        videoRef.current.currentTime = 0; 
     };
 
     useEffect(() => {
         if (videoRef.current && isVideoPlaying) {
-            videoRef.current.play(); // Auto-play video after it is selected
+            videoRef.current.play(); 
         }
     }, [selectedVideoIndex]);
 
@@ -76,7 +75,7 @@ function Course() {
                 >
                     <video
                         ref={videoRef}
-                        src={courseData?.videos?.[selectedVideoIndex]?.url} // Use selected video URL
+                        src={courseData?.videos?.[selectedVideoIndex]?.url} 
                         alt="Video"
                         className="rounded-lg object-cover"
                         style={{
@@ -111,12 +110,12 @@ function Course() {
 
             <div className="mt-8 flex w-10/12 flex-row-reverse justify-between gap-10">
                 <div className="card w-1/2 bg-white p-4">
-                    <div className="space-y-2"> {/* This adds gap between each list item */}
+                    <div className="space-y-2">
                         {courseData?.videos?.map((video, index) => (
                             <ul
                                 key={index}
                                 className={`ml-20 rounded-lg border p-2 ${index === selectedVideoIndex ? "bg-blue-500 text-white" : "bg-blue-100 text-black"}`}
-                                onClick={() => handleVideoSelect(index)} // Update video when clicked
+                                onClick={() => handleVideoSelect(index)} 
                             >
                                 <li>{video.title}</li>
                             </ul>

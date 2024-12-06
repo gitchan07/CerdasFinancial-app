@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import DetailCourse from "./pages/detail-course";
+import Course from "./pages/CoursePage";
 // import React from 'react';
 import React from "react";
 import "./index.css";
@@ -8,7 +8,6 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 
-
 function App() {
     return (
         <BrowserRouter>
@@ -16,12 +15,8 @@ function App() {
                 <Route index element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
-                <Route path="/home" element={<HomePage/>} />
-                <Route
-                    path="/course/:courseId"
-                    element={<div>Course detail page</div>}
-                />
-                <Route path="/detail-course" element={<DetailCourse />} />
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/course/:courseId" element={<Course />} />
                 <Route path="/profile" element={<div>Profile</div>} />
             </Routes>
         </BrowserRouter>

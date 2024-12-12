@@ -1,31 +1,36 @@
 {
     "course": {
         "title": "Course Title",
-        "description": "This is a description of the course or video. It provides detailed information about the content of the video and its purpose in the course. You can add more paragraphs or details as needed. Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum ad ipsam molestias id deleniti, iusto, nam tempora amet tenetur eaque sapiente deserunt eum! Ducimus, voluptatem eius? Praesentium animi rerum dicta!",
+        "includes": ["5 video", "certificate", "Access on web and tv"],
         "videos": [
             {
                 "id": 1,
                 "title": "Video 1",
+                "description": "This is a detailed description of the content covered in Video 1. It explores the fundamental concepts and provides an overview of the topics to be discussed. The video aims to provide a clear understanding of the course material and its application.",
                 "url": "https://www.w3schools.com/html/mov_bbb.mp4"
             },
             {
                 "id": 2,
                 "title": "Video 2",
+                "description": "In Video 2, we dive deeper into advanced topics and explore practical examples to demonstrate the concepts. This video builds upon the material covered in the previous video, offering more detailed explanations and insights.",
                 "url": "https://www.w3schools.com/html/movie.mp4"
             },
             {
                 "id": 3,
                 "title": "Video 3",
+                "description": "Video 3 takes a hands-on approach to demonstrate real-life applications of the concepts. Viewers will be guided through practical exercises and examples to reinforce learning.",
                 "url": "/asset/videoplayback.mp4"
             },
             {
                 "id": 4,
                 "title": "Video 4",
+                "description": "This video explains additional techniques and strategies, building on the previous videos. It includes step-by-step demonstrations and helps viewers solidify their understanding of the course topics.",
                 "url": "https://www.w3schools.com/html/movie.mp4"
             },
             {
                 "id": 5,
                 "title": "Video 5",
+                "description": "The final video in the series reviews everything covered so far and provides tips for further learning. It also includes a Q&A session to address common queries and challenges faced by learners.",
                 "url": "https://www.w3schools.com/html/mov_bbb.mp4"
             }
         ]

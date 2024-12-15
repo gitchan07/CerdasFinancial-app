@@ -1,14 +1,29 @@
 import { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPause } from "@fortawesome/free-solid-svg-icons";
+import {
+    faPause,
+    faAngleRight,
+    faAngleLeft,
+} from "@fortawesome/free-solid-svg-icons";
 
 function Course() {
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
-    const [courseData, setCourseData] = useState("");
+    const [courseData, setCourseData] = useState(null);
     const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [isSubscribed, setIsSubscribed] = useState(false);
     const videoRef = useRef(null);
+    const [step, setStep] = useState(1);
+
+    const nextStep = () => {
+        setStep((prevStep) => (prevStep === 2 ? 1 : prevStep + 1));
+    };
+
+    const prevStep = () => {
+        setStep((prevStep) => (prevStep === 1 ? 2 : prevStep - 1));
+    };
 
     const startPauseVideo = () => {
         if (isVideoPlaying) {
@@ -20,8 +35,10 @@ function Course() {
     };
 
     const updateTime = () => {
-        setCurrentTime(videoRef.current.currentTime);
-        setDuration(videoRef.current.duration);
+        if (videoRef.current) {
+            setCurrentTime(videoRef.current.currentTime);
+            setDuration(videoRef.current.duration);
+        }
     };
 
     useEffect(() => {
@@ -52,24 +69,55 @@ function Course() {
     }, []);
 
     const handleVideoSelect = (index) => {
+        if (index >= 2 && !isSubscribed) {
+            alert("Please subscribe to access this video.");
+            return;
+        }
         setSelectedVideoIndex(index);
-        setIsVideoPlaying(false); 
-        videoRef.current.load(); 
-        videoRef.current.currentTime = 0; 
+        setIsVideoPlaying(false);
+        if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+        }
     };
 
     useEffect(() => {
         if (videoRef.current && isVideoPlaying) {
-            videoRef.current.play(); 
+            videoRef.current.play();
         }
     }, [selectedVideoIndex]);
 
-    const progress = (currentTime / duration) * 100;
+    const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+    const handleSearch = (event) => {
+        setSearchTerm(event.target.value);
+    };
 
     return (
         <div className="max-w-screen flex flex-col items-center justify-center">
+            <header className="mb-2 flex w-full flex-wrap items-center justify-between px-10 pb-2 pt-4">
+                <h1 className="mb-4 text-3xl font-bold md:mb-0">
+                    📈 Cerdas Financial
+                </h1>
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search courses"
+                            value={searchTerm}
+                            onChange={handleSearch}
+                            className="w-64 rounded-full border border-gray-300 bg-gray-200 p-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 md:w-96"
+                        />
+                    </div>
+                    <img
+                        src="https://via.placeholder.com/40"
+                        alt="User Profile"
+                        className="h-10 w-10 rounded-full"
+                    />
+                </div>
+            </header>
+
             <div
-                className="group relative flex h-[500px] w-10/12 justify-end overflow-hidden rounded-2xl bg-black"
+                className="group relative flex h-[550px] w-10/12 justify-end overflow-hidden rounded-2xl bg-black"
                 onClick={startPauseVideo}
             >
                 <div
@@ -77,7 +125,7 @@ function Course() {
                 >
                     <video
                         ref={videoRef}
-                        src={courseData?.videos?.[selectedVideoIndex]?.url} 
+                        src={courseData?.videos?.[selectedVideoIndex]?.url}
                         alt="Video"
                         className="rounded-lg object-cover"
                         style={{
@@ -109,7 +157,7 @@ function Course() {
                     </div>
                 )}
 
-                <div className="absolute bottom-0 left-0 w-full h-2 bg-gray-300">
+                <div className="absolute bottom-0 left-0 h-2 w-full bg-gray-300">
                     <div
                         style={{ width: `${progress}%` }}
                         className="h-full bg-blue-600"
@@ -117,30 +165,107 @@ function Course() {
                 </div>
             </div>
 
-            <div className="mt-8 flex w-10/12 flex-row-reverse justify-between gap-10">
-                <div className="card w-1/2 bg-white p-4">
+            <div className="mt-8 flex w-10/12 flex-col justify-between gap-10 text-justify lg:flex-row">
+                <div className="flex w-full lg:w-1/2">
+                    {step === 1 && (
+                        <div className="lignt-center mt-4 flex items-center justify-center px-4">
+                            <FontAwesomeIcon
+                                icon={faAngleLeft}
+                                className="cursor-pointer text-5xl text-blue-600"
+                                onClick={nextStep}
+                            />
+                        </div>
+                    )}
+
+                    {step === 2 && (
+                        <div className="mt-4 flex items-center justify-between px-4">
+                            <FontAwesomeIcon
+                                icon={faAngleLeft}
+                                className="cursor-pointer text-5xl text-blue-600"
+                                onClick={nextStep}
+                            />
+                        </div>
+                    )}
+
+                    {step === 2 && (
+                        <div className="w-full p-4 text-left">
+                            <h3 className="mb-4 flex flex-col text-4xl font-bold">
+                                Course Includes
+                            </h3>
+                            <ul className="flex flex-col flex-wrap gap-2">
+                                {Array.isArray(courseData?.includes) &&
+                                courseData?.includes.length > 0 ? (
+                                    courseData.includes.map((item, index) => (
+                                        <li key={index}>{item} </li>
+                                    ))
+                                ) : (
+                                    <li>No data available</li>
+                                )}
+                            </ul>
+                        </div>
+                    )}
+
+                    {step === 1 && (
+                        <div className="p-4 px-8">
+                            {courseData && (
+                                <>
+                                    <h2 className="mb-4 text-center text-4xl font-bold">
+                                        {courseData.title}
+                                    </h2>
+                                    <p>{courseData.description}</p>
+                                    <p>
+                                        {
+                                            courseData?.videos?.[
+                                                selectedVideoIndex
+                                            ]?.description
+                                        }
+                                    </p>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    {step === 1 && (
+                        <div className="mt-4 flex items-center justify-between px-4">
+                            <FontAwesomeIcon
+                                icon={faAngleRight}
+                                className="cursor-pointer text-5xl text-blue-600"
+                                onClick={nextStep}
+                            />
+                        </div>
+                    )}
+
+                    {step === 2 && (
+                        <div className="mt-4 flex items-center justify-between px-4">
+                            <FontAwesomeIcon
+                                icon={faAngleRight}
+                                className="cursor-pointer text-5xl text-blue-600"
+                                onClick={nextStep}
+                            />
+                        </div>
+                    )}
+                </div>
+
+                <div className="w-full bg-white p-4 lg:w-1/2">
                     <div className="space-y-2">
                         {courseData?.videos?.map((video, index) => (
                             <ul
                                 key={index}
-                                className={`ml-20 rounded-lg border p-2 ${index === selectedVideoIndex ? "bg-blue-500 text-white" : "bg-blue-100 text-black"}`}
-                                onClick={() => handleVideoSelect(index)} 
+                                className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex ? "border-blue-600 bg-blue-400 text-white" : "border-blue-300 bg-blue-100 text-black"}`}
+                                onClick={() => handleVideoSelect(index)}
+                                style={{
+                                    cursor:
+                                        index >= 2 && !isSubscribed
+                                            ? "not-allowed"
+                                            : "pointer",
+                                    opacity:
+                                        index >= 2 && !isSubscribed ? 0.5 : 1,
+                                }}
                             >
                                 <li>{video.title}</li>
                             </ul>
                         ))}
                     </div>
-                </div>
-
-                <div className="card w-1/2 bg-white p-4">
-                    {courseData && (
-                        <>
-                            <h2 className="mb-4 text-4xl font-bold">
-                                {courseData.title}
-                            </h2>
-                            <p>{courseData.description}</p>
-                        </>
-                    )}
                 </div>
             </div>
         </div>

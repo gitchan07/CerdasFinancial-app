@@ -4,6 +4,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faAngleRight,
     faAngleLeft,
+    faMobileAlt,
+    faCertificate,
+    faPlayCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -66,7 +69,7 @@ function Course() {
 
         setIsVideoPlaying(false); // Reset video to paused state
 
-    setSelectedVideoIndex(index); // Update selected video index
+        setSelectedVideoIndex(index); // Update selected video index
     };
 
     // Handle Subscription
@@ -92,6 +95,8 @@ function Course() {
     // Render for Icon
     const renderIcon = (key) => {
         switch (key) {
+            case "play":
+                return <FontAwesomeIcon icon={faPlayCircle} className="text-xl text-blue-500" />;
             case "mobile":
                 return <FontAwesomeIcon icon={faMobileAlt} className="text-xl text-green-500" />;
             case "certificate":
@@ -129,6 +134,7 @@ function Course() {
                             />
                         </div>
                     )}
+
                     {step === 2 && (
                         <div className="mt-4 flex items-center justify-between px-4">
                             <FontAwesomeIcon
@@ -144,7 +150,7 @@ function Course() {
                             {courseData && (
                                 <>
                                     <h2 className="mb-4 text-left text-3xl font-bold">{courseData.name}</h2>
-                                    <p>{courseData.contents.description}</p>
+                                    <p>{courseData.contents?.description}</p>
                                     <p>{courseData?.contents?.[selectedVideoIndex]?.description}</p>
                                 </>
                             )}
@@ -154,17 +160,19 @@ function Course() {
                     {step === 2 && (
                         <div className="w-full p-4 px-8 text-left">
                             <h3 className="mb-4 flex flex-col text-3xl font-bold">Course Includes</h3>
-                            <ul className="flex flex-col flex-wrap gap-4">
+                            <div className="carousel-container flex overflow-x-auto">
                                 {courseData?.detail ? (
                                     Object.entries(JSON.parse(courseData.detail)).map(([key, value], index) => (
-                                        <li key={index} className="flex items-center gap-2">
-                                            {renderIcon(key)} <strong className="mr-5">{key}: </strong>{value}
-                                        </li>
+                                        <div key={index} className="carousel-item flex-none w-46 p-4 mx-2 bg-gray-100 rounded-lg">
+                                            {renderIcon(key)}
+                                            <h4 className="font-bold">{key}</h4>
+                                            <p>{value}</p>
+                                        </div>
                                     ))
                                 ) : (
-                                    <li>No data available</li>
+                                    <div>No data available</div>
                                 )}
-                            </ul>
+                            </div>
                         </div>
                     )}
 
@@ -177,6 +185,7 @@ function Course() {
                             />
                         </div>
                     )}
+
                     {step === 2 && (
                         <div className="mt-4 flex items-center justify-between px-4">
                             <FontAwesomeIcon
@@ -189,7 +198,7 @@ function Course() {
                 </div>
 
                 {/* Video List */}
-                <div className="hidden w-full bg-white p-4 lg:block lg:w-1/2">
+                <div className="w-full bg-white p-4 lg:block lg:w-1/2">
                     <div className="space-y-2">
                         {courseData?.contents?.map((video, index) => (
                             <ul

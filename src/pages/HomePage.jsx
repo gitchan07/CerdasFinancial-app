@@ -90,6 +90,12 @@ const HomePage = () => {
         return decodedPayload.exp < currentTime; // Token is expired if exp < current time
     };
 
+    // Filtered courses based on searchTerm
+    const filteredCourses = courses.filter(course => 
+        course.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        course.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error fetching data: {error}</p>;
 
@@ -123,25 +129,29 @@ const HomePage = () => {
                 </div>
             </section>
             <section>
-                <h2 className="mb-4 mt-8 text-xl text-blue-600 font-bold">NEW COURSE</h2>{" "}
+                <h2 className="mb-4 mt-8 text-xl text-blue-600 font-bold">NEW COURSE</h2>
                 <div className="flex flex-wrap justify-start gap-4">
-                    {courses.map((course) => (
-                        <Link
-                            to={`/course/${course.id}`}
-                            onClick={() => handleCourseClick(course.id)}
-                            key={course.id}
-                        >
-                            <Card
-                                name={course.name}
-                                description={course.description}
-                                progress={course.progress || 0}
-                                total={course.total || 1}
-                                imageUrl={course.imageUrl || "https://via.placeholder.com/300x200"}
-                                progressText={`${course.progress || 0}/${course.total || 1}`}
-                                showProgress={false}
-                            />
-                        </Link>
-                    ))}
+                    {filteredCourses.length > 0 ? (
+                        filteredCourses.map((course) => (
+                            <Link
+                                to={`/course/${course.id}`}
+                                onClick={() => handleCourseClick(course.id)}
+                                key={course.id}
+                            >
+                                <Card
+                                    name={course.name}
+                                    description={course.description}
+                                    progress={course.progress || 0}
+                                    total={course.total || 1}
+                                    imageUrl={course.imageUrl || "https://via.placeholder.com/300x200"}
+                                    progressText={`${course.progress || 0}/${course.total || 1}`}
+                                    showProgress={false}
+                                />
+                            </Link>
+                        ))
+                    ) : (
+                        <p>No courses found</p>
+                    )}
                 </div>
             </section>
         </div>

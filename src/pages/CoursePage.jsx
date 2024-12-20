@@ -2,17 +2,14 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faPause,
     faAngleRight,
     faAngleLeft,
-    faMobileAlt,
-    faCertificate,
-    faPlayCircle,
 } from "@fortawesome/free-solid-svg-icons";
 import { useParams } from "react-router-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { fetchCourseData, subscribeToCourse } from "../services/api";
 import SubscribePopup from "../components/PopupSubcriber";
+import RenderVideoCourse from "../components/RenderVideoCourse";
 
 function Course() {
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -21,7 +18,6 @@ function Course() {
     const [courseData, setCourseData] = useState(null);
     const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
     const [isSubscribed, setIsSubscribed] = useState(false);
-    const videoRef = useRef(null);
     const [step, setStep] = useState(1);
     const [courseId] = useState(useParams().courseId);
     const [selectedPrice, setSelectedPrice] = useState(null);
@@ -41,31 +37,7 @@ function Course() {
         });
     };
 
-    const startPauseVideo = () => {
-        if (isVideoPlaying) {
-            videoRef.current.pause();
-        } else {
-            videoRef.current.play();
-        }
-        setIsVideoPlaying(!isVideoPlaying);
-    };
-
-    const updateTime = () => {
-        if (videoRef.current) {
-            setCurrentTime(videoRef.current.currentTime);
-            setDuration(videoRef.current.duration);
-        }
-    };
-
-    useEffect(() => {
-        const videoElement = videoRef.current;
-        const interval = setInterval(updateTime, 1000);
-        return () => {
-            clearInterval(interval);
-        };
-    }, []);
-
-    // Fetch Content Course
+    // Fetch Course Data
     useEffect(() => {
         const fetchData = async () => {
             const token = localStorage.getItem("access_token");
@@ -85,31 +57,17 @@ function Course() {
         fetchData();
     }, [courseId]);
 
-    // Handle Video For Subscribe
+    // Handle Video Select
     const handleVideoSelect = (index) => {
         if (index >= 2 && !isSubscribed) {
             setShowSubscribePopup(true);
             return;
         }
 
-        if (videoRef.current) {
-            videoRef.current.pause();
-        }
+        setIsVideoPlaying(false); // Reset video to paused state
 
-        setSelectedVideoIndex(index);
-        setIsVideoPlaying(false);
-        if (videoRef.current) {
-            videoRef.current.currentTime = 0;
-        }
+    setSelectedVideoIndex(index); // Update selected video index
     };
-
-    useEffect(() => {
-        if (videoRef.current && isVideoPlaying) {
-            videoRef.current.play();
-        }
-    }, [selectedVideoIndex, isVideoPlaying]);
-
-    const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
     // Handle Subscription
     const handleSubscribeClick = async () => {
@@ -119,7 +77,6 @@ function Course() {
         }
 
         const token = localStorage.getItem("access_token");
-        console.log("Token:", token);
 
         try {
             await subscribeToCourse(selectedPrice, token);
@@ -135,27 +92,10 @@ function Course() {
     // Render for Icon
     const renderIcon = (key) => {
         switch (key) {
-            case "play":
-                return (
-                    <FontAwesomeIcon
-                        icon={faPlayCircle}
-                        className="text-xl text-blue-500"
-                    />
-                );
             case "mobile":
-                return (
-                    <FontAwesomeIcon
-                        icon={faMobileAlt}
-                        className="text-xl text-green-500"
-                    />
-                );
+                return <FontAwesomeIcon icon={faMobileAlt} className="text-xl text-green-500" />;
             case "certificate":
-                return (
-                    <FontAwesomeIcon
-                        icon={faCertificate}
-                        className="text-xl text-yellow-500"
-                    />
-                );
+                return <FontAwesomeIcon icon={faCertificate} className="text-xl text-yellow-500" />;
             default:
                 return null;
         }
@@ -164,56 +104,17 @@ function Course() {
     return (
         <div className="max-w-screen flex flex-col items-center justify-center">
             {/* Video Player */}
-            <div
-                className="group relative flex h-[550px] w-10/12 justify-end overflow-hidden rounded-2xl bg-black"
-                onClick={startPauseVideo}
-            >
-                <div
-                    className={`absolute left-0 top-0 h-full w-full ${!isVideoPlaying ? "bg-opacity-1 bg-black" : "opacity-100"}`}
-                >
-                    <video
-                        ref={videoRef}
-                        src={courseData?.contents?.[selectedVideoIndex]?.video_url}
-                        alt="Video"
-                        className="rounded-lg object-cover"
-                        style={{
-                            opacity: !isVideoPlaying ? 0.5 : 1,
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "fill",
-                        }}
-                    />
-                </div>
-
-                {/* Play/Pause icon */}
-                {!isVideoPlaying && (
-                    <img
-                        src="/asset/playall.png"
-                        alt="Klik untuk memutar"
-                        className="absolute left-1/2 top-1/2 h-auto w-auto -translate-x-1/2 -translate-y-1/2 transform cursor-pointer object-contain"
-                    />
-                )}
-
-                {isVideoPlaying && (
-                    <div
-                        className="pause-icon absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform opacity-0 group-hover:opacity-100"
-                        onClick={startPauseVideo}
-                    >
-                        <FontAwesomeIcon
-                            icon={faPause}
-                            className="text-8xl text-blue-600"
-                        />
-                    </div>
-                )}
-
-                {/* Progress Bar */}
-                <div className="absolute bottom-0 left-0 h-2 w-full bg-gray-300">
-                    <div
-                        style={{ width: `${progress}%` }}
-                        className="h-full bg-blue-600"
-                    />
-                </div>
-            </div>
+            {courseData && (
+                <RenderVideoCourse
+                    videoUrl={courseData?.contents?.[selectedVideoIndex]?.video_url}
+                    isVideoPlaying={isVideoPlaying}
+                    setIsVideoPlaying={setIsVideoPlaying}
+                    currentTime={currentTime}
+                    setCurrentTime={setCurrentTime}
+                    duration={duration}
+                    selectedVideoIndex={selectedVideoIndex}
+                />
+            )}
 
             {/* Course Details and Video List */}
             <div className="mt-8 flex w-10/12 flex-col justify-between gap-10 text-justify lg:flex-row">
@@ -242,17 +143,9 @@ function Course() {
                         <div className="p-4 px-8">
                             {courseData && (
                                 <>
-                                    <h2 className="mb-4 text-left text-3xl font-bold">
-                                        {courseData.name}
-                                    </h2>
+                                    <h2 className="mb-4 text-left text-3xl font-bold">{courseData.name}</h2>
                                     <p>{courseData.contents.description}</p>
-                                    <p>
-                                        {
-                                            courseData?.contents?.[
-                                                selectedVideoIndex
-                                            ]?.description
-                                        }
-                                    </p>
+                                    <p>{courseData?.contents?.[selectedVideoIndex]?.description}</p>
                                 </>
                             )}
                         </div>
@@ -260,23 +153,12 @@ function Course() {
 
                     {step === 2 && (
                         <div className="w-full p-4 px-8 text-left">
-                            <h3 className="mb-4 flex flex-col text-3xl font-bold">
-                                Course Includes
-                            </h3>
+                            <h3 className="mb-4 flex flex-col text-3xl font-bold">Course Includes</h3>
                             <ul className="flex flex-col flex-wrap gap-4">
                                 {courseData?.detail ? (
-                                    Object.entries(
-                                        JSON.parse(courseData.detail)
-                                    ).map(([key, value], index) => (
-                                        <li
-                                            key={index}
-                                            className="flex items-center gap-2"
-                                        >
-                                            {renderIcon(key)}{" "}
-                                            <strong className="mr-5">
-                                                {key}:{" "}
-                                            </strong>
-                                            {value}
+                                    Object.entries(JSON.parse(courseData.detail)).map(([key, value], index) => (
+                                        <li key={index} className="flex items-center gap-2">
+                                            {renderIcon(key)} <strong className="mr-5">{key}: </strong>{value}
                                         </li>
                                     ))
                                 ) : (
@@ -312,19 +194,14 @@ function Course() {
                         {courseData?.contents?.map((video, index) => (
                             <ul
                                 key={index}
-                                className={`rounded-lg border-2 p-2 ${
-                                    index === selectedVideoIndex
-                                        ? "border-blue-600 bg-blue-400 text-white"
-                                        : "border-blue-300 bg-blue-100 text-black"
-                                }`}
-                                onClick={() => handleVideoSelect(index)}
+                                className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex
+                                    ? "border-blue-600 bg-blue-400 text-white"
+                                    : "border-blue-300 bg-blue-100 text-black"
+                                    }`}
+                                onClick={() => handleVideoSelect(index)} // Update the selected video index
                                 style={{
-                                    cursor:
-                                        index >= 2 && !isSubscribed
-                                            ? "not-allowed"
-                                            : "pointer",
-                                    opacity:
-                                        index >= 2 && !isSubscribed ? 0.5 : 1,
+                                    cursor: index >= 2 && !isSubscribed ? "not-allowed" : "pointer",
+                                    opacity: index >= 2 && !isSubscribed ? 0.5 : 1,
                                 }}
                             >
                                 <li>{video.name}</li>
@@ -340,6 +217,7 @@ function Course() {
                 setShowSubscribePopup={setShowSubscribePopup}
                 setSelectedPrice={setSelectedPrice}
                 handleSubscribeClick={handleSubscribeClick}
+                selectedPrice={selectedPrice}
             />
         </div>
     );

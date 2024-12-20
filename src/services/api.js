@@ -26,7 +26,7 @@ export const getCurrentUser = async (token) => {
 export const fetchCourses = async () => {
     try {
         console.log("Fetching courses...");
-        const response = await api.get("/api/courses");
+        const response = await api.get("/api/v1/courses");
         console.log("Response:", response);
         return response.data;
     } catch (error) {
@@ -38,7 +38,7 @@ export const fetchCourses = async () => {
 // Fetch user profile data
 export const fetchUserProfile = async () => {
     try {
-        const response = await api.get("api/users"); // Endpoint disesuaikan
+        const response = await api.get("api/v1/me"); // Endpoint disesuaikan
         return response.data; // Pastikan struktur data sesuai dengan response API
     } catch (error) {
         console.error("Error fetching user profile:", error);

@@ -1,5 +1,8 @@
-// Course.js
-
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { fetchCourseData, getSubscriptionStatus, subscribeToCourse } from "../services/api"; // Import the updated getCurrentUser
+import RenderVideoCourse from "../components/RenderVideoCourse";
+import SubscribePopup from "../components/PopupSubcriber";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faAngleRight,
@@ -8,11 +11,6 @@ import {
     faCertificate,
     faPlayCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { fetchCourseData, subscribeToCourse } from "../services/api";
-import SubscribePopup from "../components/PopupSubcriber";
-import RenderVideoCourse from "../components/RenderVideoCourse";
 
 function Course() {
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -20,27 +18,13 @@ function Course() {
     const [duration, setDuration] = useState(0);
     const [courseData, setCourseData] = useState(null);
     const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
-    const [isSubscribed, setIsSubscribed] = useState(false);
+    const [isSubscribed, setIsSubscribed] = useState(false); // Track subscription status
     const [step, setStep] = useState(1);
     const [courseId] = useState(useParams().courseId);
     const [selectedPrice, setSelectedPrice] = useState(null);
     const [showSubscribePopup, setShowSubscribePopup] = useState(false);
 
-    const nextStep = () => {
-        setStep((prevStep) => {
-            if (prevStep === 2) return 1;
-            return prevStep + 1;
-        });
-    };
-
-    const prevStep = () => {
-        setStep((prevStep) => {
-            if (prevStep === 1) return 2;
-            return prevStep - 1;
-        });
-    };
-
-    // Fetch Course Data
+    // Fetch course and user data
     useEffect(() => {
         const fetchData = async () => {
             const token = localStorage.getItem("access_token");
@@ -50,57 +34,88 @@ function Course() {
             }
 
             try {
-                const data = await fetchCourseData(courseId, token);
-                setCourseData(data);
+                // Fetch course data
+                const courseData = await fetchCourseData(courseId, token);
+                setCourseData(courseData);
+
+                // Fetch current user data to check subscription status
+                const isSubscribed = await getSubscriptionStatus(token); // Get subscription status
+                setIsSubscribed(isSubscribed); // Set the subscription status in state
             } catch (error) {
-                console.error("Error fetching course data:", error);
+                console.error("Error fetching course or user data:", error);
             }
         };
 
         fetchData();
     }, [courseId]);
 
-    // Handle Video Select
+    const nextStep = () => {
+        setStep((prevStep) => (prevStep === 2 ? 1 : prevStep + 1));
+    };
+
+    const prevStep = () => {
+        setStep((prevStep) => (prevStep === 1 ? 2 : prevStep - 1));
+    };
+
     const handleVideoSelect = (index) => {
         if (index >= 2 && !isSubscribed) {
             setShowSubscribePopup(true);
             return;
         }
 
-        setIsVideoPlaying(false); // Reset video to paused state
-
-        setSelectedVideoIndex(index); // Update selected video index
+        setIsVideoPlaying(false);
+        setSelectedVideoIndex(index);
     };
 
-    // Handle Subscription
     const handleSubscribeClick = async () => {
         if (!selectedPrice) {
             alert("Please select a subscription plan.");
             return;
         }
 
+        // Retrieve token from localStorage
         const token = localStorage.getItem("access_token");
 
+        // Check if the token exists
+        if (!token) {
+            alert("You must be logged in to subscribe.");
+            return;
+        }
+
         try {
-            await subscribeToCourse(selectedPrice, token);
-            setIsSubscribed(true);
-            setShowSubscribePopup(false);
-            alert("Subscription successful!");
+            // Call the subscribeToCourse function to subscribe the user
+            const response = await subscribeToCourse(selectedPrice, token);
+            if (response.status === 201) {
+                setIsSubscribed(true); // Set the user as subscribed
+                setShowSubscribePopup(false);
+                alert("Subscription successful!");
+            }
         } catch (error) {
             console.error("Error during subscription:", error);
-            alert("Subscription failed. Please try again.");
+            if (error.response && error.response.status === 401) {
+                alert("Your session has expired. Please log in again.");
+                // Optionally, redirect the user to the login page
+                window.location.href = "/login";
+            } else {
+                alert("Subscription failed. Please try again.");
+            }
         }
     };
 
-    // Render for Icon
     const renderIcon = (key) => {
         switch (key) {
             case "play":
-                return <FontAwesomeIcon icon={faPlayCircle} className="text-xl text-blue-500" />;
+                return (
+                    <FontAwesomeIcon icon={faPlayCircle} className="text-xl text-blue-500" />
+                );
             case "mobile":
-                return <FontAwesomeIcon icon={faMobileAlt} className="text-xl text-green-500" />;
+                return (
+                    <FontAwesomeIcon icon={faMobileAlt} className="text-xl text-green-500" />
+                );
             case "certificate":
-                return <FontAwesomeIcon icon={faCertificate} className="text-xl text-yellow-500" />;
+                return (
+                    <FontAwesomeIcon icon={faCertificate} className="text-xl text-yellow-500" />
+                );
             default:
                 return null;
         }
@@ -127,21 +142,13 @@ function Course() {
                 <div className="flex w-full lg:w-1/2">
                     {step === 1 && (
                         <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon
-                                icon={faAngleLeft}
-                                className="cursor-pointer text-5xl text-blue-600"
-                                onClick={prevStep}
-                            />
+                            <FontAwesomeIcon icon={faAngleLeft} className="cursor-pointer text-5xl text-blue-600" onClick={prevStep} />
                         </div>
                     )}
 
                     {step === 2 && (
                         <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon
-                                icon={faAngleLeft}
-                                className="cursor-pointer text-5xl text-blue-600"
-                                onClick={prevStep}
-                            />
+                            <FontAwesomeIcon icon={faAngleLeft} className="cursor-pointer text-5xl text-blue-600" onClick={prevStep} />
                         </div>
                     )}
 
@@ -163,7 +170,7 @@ function Course() {
                             <div className="carousel-container flex overflow-x-auto">
                                 {courseData?.detail ? (
                                     Object.entries(JSON.parse(courseData.detail)).map(([key, value], index) => (
-                                        <div key={index} className="carousel-item flex-none w-46 p-4 mx-2 bg-gray-100 rounded-lg">
+                                        <div key={index} className="carousel-item w-46 mx-2 flex-none rounded-lg bg-gray-100 p-4">
                                             {renderIcon(key)}
                                             <h4 className="font-bold">{key}</h4>
                                             <p>{value}</p>
@@ -178,21 +185,13 @@ function Course() {
 
                     {step === 1 && (
                         <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon
-                                icon={faAngleRight}
-                                className="cursor-pointer text-5xl text-blue-600"
-                                onClick={nextStep}
-                            />
+                            <FontAwesomeIcon icon={faAngleRight} className="cursor-pointer text-5xl text-blue-600" onClick={nextStep} />
                         </div>
                     )}
 
                     {step === 2 && (
                         <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon
-                                icon={faAngleRight}
-                                className="cursor-pointer text-5xl text-blue-600"
-                                onClick={nextStep}
-                            />
+                            <FontAwesomeIcon icon={faAngleRight} className="cursor-pointer text-5xl text-blue-600" onClick={nextStep} />
                         </div>
                     )}
                 </div>
@@ -203,10 +202,7 @@ function Course() {
                         {courseData?.contents?.map((video, index) => (
                             <ul
                                 key={index}
-                                className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex
-                                    ? "border-blue-600 bg-blue-400 text-white"
-                                    : "border-blue-300 bg-blue-100 text-black"
-                                    }`}
+                                className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex ? "border-blue-600 bg-blue-400 text-white" : "border-blue-300 bg-blue-100 text-black"}`}
                                 onClick={() => handleVideoSelect(index)} // Update the selected video index
                                 style={{
                                     cursor: index >= 2 && !isSubscribed ? "not-allowed" : "pointer",

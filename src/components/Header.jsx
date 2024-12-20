@@ -1,7 +1,7 @@
 // src/components/Header.js
 
-import { useState } from "react";
-import { useNavigate, Link} from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { Search } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 
@@ -9,6 +9,8 @@ const Header = ({ searchTerm, setSearchTerm }) => {
     const navigate = useNavigate();
     const [dropdownVisible, setDropdownVisible] = useState(false);
     const { user, logout } = useAuth();
+    const dropdownRef = useRef(null); // To detect clicks outside
+    const profileButtonRef = useRef(null); // To detect clicks on the profile button
 
     const userProfile = user
         ? { name: user.name || "Anonymous", photoUrl: user.photoUrl }
@@ -35,6 +37,25 @@ const Header = ({ searchTerm, setSearchTerm }) => {
             .toUpperCase();
     };
 
+    // Handle clicks outside of dropdown or profile button
+    const handleClickOutside = (e) => {
+        if (
+            dropdownRef.current &&
+            !dropdownRef.current.contains(e.target) &&
+            profileButtonRef.current &&
+            !profileButtonRef.current.contains(e.target)
+        ) {
+            setDropdownVisible(false);
+        }
+    };
+
+    useEffect(() => {
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     return (
         <header className="mb-8 flex flex-wrap items-center justify-between">
             <Link href="#" className="flex items-center">
@@ -59,6 +80,7 @@ const Header = ({ searchTerm, setSearchTerm }) => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-500" />
                 </div>
                 <div
+                    ref={profileButtonRef} // Assign ref to the profile button
                     className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-blue-500 font-bold text-white"
                     onClick={toggleDropdown}
                 >
@@ -73,7 +95,10 @@ const Header = ({ searchTerm, setSearchTerm }) => {
                     )}
                 </div>
                 {dropdownVisible && (
-                    <div className="absolute right-0 mt-12 w-40 rounded border bg-white shadow-md">
+                    <div
+                        ref={dropdownRef} // Assign ref to the dropdown
+                        className="absolute right-0 mt-36 w-40 rounded-md border bg-white shadow-md "
+                    >
                         <ul>
                             <li
                                 className="cursor-pointer px-4 py-2 hover:bg-gray-100"

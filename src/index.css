@@ -84,19 +84,14 @@
 
 
 .profile-container {
-    @apply max-w-md mx-auto p-4 bg-white rounded-lg shadow-md;
+    @apply max-w-lg mx-auto p-8 bg-white rounded-lg shadow-md my-12;
     background-color: #f7f7f7;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   }
   
-  /* .profile-container h2 {
-    @apply text-2xl font-bold text-blue-800;
-  } */
-  
   .profile-info {
     @apply flex-1 ml-4;
   }
-  
   
   .error-message {
     @apply text-red-500 text-lg font-medium;
@@ -127,21 +122,9 @@
     @apply text-lg font-medium text-gray-600 mt-2;
   }
 
-  /* .profile-stats {
-    @apply flex justify-between mt-4;
+  .profile-subs {
+    @apply text-lg font-medium text-gray-600 mt-2;
   }
-  
-  .stat-item {
-    @apply flex-1 text-center;
-  }
-  
-  .stat-value {
-    @apply text-2xl font-bold text-blue-800;
-  }
-  
-  .stat-label {
-    @apply text-lg font-medium text-gray-600;
-  } */
   
   .edit-profile-btn {
     @apply bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded-lg;

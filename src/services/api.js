@@ -45,3 +45,37 @@ export const fetchUserProfile = async () => {
         throw error;
     }
 };
+
+// Function to handle Content Course
+export const fetchCourseData = async (courseId, token) => {
+    try {
+        const response = await api.get(`/course/${courseId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data.data;
+    } catch (error) {
+        console.error("Error fetching course data:", error);
+        throw error;
+    }
+};
+
+// Function to handle subscription
+export const subscribeToCourse = async (selectedPrice, token) => {
+    try {
+        const formData = new FormData();
+        formData.append("price", selectedPrice * 1000);
+
+        const response = await api.post(`/subscribe`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response;
+    } catch (error) {
+        console.error("Error during subscription:", error);
+        throw error;
+    }
+};

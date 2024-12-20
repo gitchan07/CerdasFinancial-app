@@ -8,10 +8,10 @@ const RenderVideoCourse = ({
     setIsVideoPlaying,
     currentTime,
     setCurrentTime,
-    duration,
     selectedVideoIndex,
 }) => {
     const videoRef = useRef(null);
+    const [duration, setDuration] = useState(0); // Adding state for duration
 
     const startPauseVideo = () => {
         if (isVideoPlaying) {
@@ -25,7 +25,9 @@ const RenderVideoCourse = ({
     const updateTime = () => {
         if (videoRef.current) {
             setCurrentTime(videoRef.current.currentTime);
-            setDuration(videoRef.current.duration);
+            if (videoRef.current.duration && duration !== videoRef.current.duration) {
+                setDuration(videoRef.current.duration);
+            }
         }
     };
 

@@ -73,21 +73,40 @@ export const fetchCourseData = async (courseId, token) => {
     }
 };
 
-// Function to handle subscription
-export const subscribeToCourse = async (selectedPrice, token) => {
+// Function to subscribe a user
+export const subscribeToCourse = async (selectedPrice, token, userId) => {
     try {
         const formData = new FormData();
-        formData.append("price", selectedPrice * 1000);
+        formData.append("price", selectedPrice); // Assuming price is in the correct format
 
-        const response = await api.post(`/subscribe`, {
+        const response = await api.post("/subscribe", formData, {
             headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`, // Add token to Authorization header
             },
         });
 
         return response;
     } catch (error) {
         console.error("Error during subscription:", error);
+        throw error;
+    }
+};
+
+// Function to get subscription status
+export const getSubscriptionStatus = async (token) => {
+    try {
+        const response = await api.get("/me", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        // Extracting the `is_subscribe` value from the response
+        const isSubscribed = response.data.users.is_subscribe === 1; // Assuming 1 means subscribed
+
+        return isSubscribed;
+    } catch (error) {
+        console.error("Error fetching user data:", error);
         throw error;
     }
 };

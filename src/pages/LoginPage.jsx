@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import { useState } from "react";
+import { Link, Navigate, useLocation } from "react-router-dom";
 import loginImage from "../assets/login.jpg";
+import { useAuth } from "../context/AuthContext";
 
 const LoginPage = () => {
     const [email, setEmail] = useState("");
@@ -10,31 +10,28 @@ const LoginPage = () => {
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
 
+    const { user, handleLogin } = useAuth();
+    const { state } = useLocation();
+
     const handleFormSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            const response = await axios.post(
-                "http://localhost:5000/api/v1/login",
-                {
-                    email,
-                    password,
-                }
-            );
+            const data = new FormData();
+            data.append("email", email);
+            data.append("password", password);
+            await handleLogin(data);
 
-            const { access_token, refresh_token, users } = response.data;
-            setSuccessMessage(`Welcome back, ${users.full_name}!`);
-
-            localStorage.setItem("access_token", access_token);
-            localStorage.setItem("refresh_token", refresh_token);
-
-            console.log("Login successful:", response.data);
+            setSuccessMessage("Authentication succeed");
         } catch (err) {
+            console.log(err);
             setError(
                 err.response?.data?.message || "An error occurred during login."
             );
         }
     };
+
+    if (user) return <Navigate to={"/home"} replace />;
 
     return (
         <div className="flex h-screen items-center justify-center bg-gray-100">
@@ -68,6 +65,11 @@ const LoginPage = () => {
                         <h2 className="font-david-libre custom-heading text-2xl text-gray-700">
                             Cerdas Financial
                         </h2>
+                        {state?.message && (
+                            <p className="mt-4 text-green-500">
+                                {state.message}
+                            </p>
+                        )}
                         <form className="mt-6" onSubmit={handleFormSubmit}>
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700">

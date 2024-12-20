@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import axios from "axios";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import registerImage from "../assets/register.jpg";
+import { register } from "../services/api";
 
 const RegisterPage = () => {
     const [email, setEmail] = useState("");
@@ -10,6 +10,8 @@ const RegisterPage = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
+
+    const navigate = useNavigate();
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
@@ -20,19 +22,25 @@ const RegisterPage = () => {
         }
 
         try {
-            const response = await axios.post(
-                "http://localhost:5000/api/v1/register",
-                {
-                    email,
-                    full_name: fullName,
-                    password,
-                    confirm_password: confirmPassword,
-                }
-            );
+            const formData = new FormData();
+            formData.append("email", email);
+            formData.append("full_name", fullName);
+            formData.append("password", password);
+            formData.append("confirm_password", password);
+
+            const response = await register(formData);
+
+            if (response.status != 201) {
+                throw response.data.msg;
+            }
 
             setSuccessMessage("Registration successful! You can now log in.");
             console.log("Registration successful:", response.data);
+            navigate("/login", {
+                state: { message: "Registration successful. Please login" },
+            });
         } catch (err) {
+            console.log(err);
             setError(
                 err.response?.data?.message ||
                     "An error occurred during registration."

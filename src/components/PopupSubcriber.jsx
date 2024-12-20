@@ -1,6 +1,9 @@
-
-const SubscribePopup = ({ show, setShowSubscribePopup, setSelectedPrice, handleSubscribeClick }) => {
+const SubscribePopup = ({ show, setShowSubscribePopup, setSelectedPrice, handleSubscribeClick, selectedPrice }) => {
     if (!show) return null;
+
+    const handleSelectPrice = (price) => {
+        setSelectedPrice(price);
+    };
 
     return (
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-50">
@@ -13,28 +16,18 @@ const SubscribePopup = ({ show, setShowSubscribePopup, setSelectedPrice, handleS
                 </p>
 
                 {/* Subscription Duration Choices */}
-                <div className="mb-6 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-2">
-                    <div
-                        className="flex cursor-pointer flex-col items-center rounded-lg bg-white p-4 shadow-lg transition-shadow duration-200 hover:bg-blue-50 hover:shadow-2xl"
-                        onClick={() => setSelectedPrice(150000)} // Rp 150,000
-                    >
-                        <p className="text-2xl font-bold text-gray-800">1 Month</p>
-                        <p className="text-lg text-gray-600">Rp 150,000</p>
-                    </div>
-                    <div
-                        className="flex cursor-pointer flex-col items-center rounded-lg bg-white p-4 shadow-lg transition-shadow duration-200 hover:bg-blue-50 hover:shadow-2xl"
-                        onClick={() => setSelectedPrice(400000)} // Rp 400,000
-                    >
-                        <p className="text-2xl font-bold text-gray-800">3 Months</p>
-                        <p className="text-lg text-gray-600">Rp 400,000</p>
-                    </div>
-                    <div
-                        className="flex cursor-pointer flex-col items-center rounded-lg bg-white p-4 shadow-lg transition-shadow duration-200 hover:bg-blue-50 hover:shadow-2xl"
-                        onClick={() => setSelectedPrice(700000)} // Rp 700,000
-                    >
-                        <p className="text-2xl font-bold text-gray-800">6 Months</p>
-                        <p className="text-lg text-gray-600">Rp 700,000</p>
-                    </div>
+                <div className="mb-6 grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-3">
+                    {[150000, 400000, 700000].map((price, index) => (
+                        <div
+                            key={index}
+                            className={`flex cursor-pointer flex-col items-center rounded-lg p-4 shadow-lg transition-shadow duration-200 
+                                ${selectedPrice === price ? 'bg-blue-50 shadow-2xl' : 'bg-white hover:bg-blue-50 hover:shadow-2xl'}`}
+                            onClick={() => handleSelectPrice(price)}
+                        >
+                            <p className="text-2xl font-bold text-gray-800">{price === 150000 ? '1 Month' : price === 400000 ? '3 Months' : '6 Months'}</p>
+                            <p className="text-lg text-gray-600">Rp {price.toLocaleString()}</p>
+                        </div>
+                    ))}
                 </div>
 
                 <div className="flex justify-center gap-6">

@@ -4,29 +4,37 @@ const api = axios.create({
     baseURL: "https://api-cerdasfinancial.crowintheglass.com/api/v1", // Base URL API
 });
 
+// Login user
 export const login = async (formData) => {
     const response = await api.post("/login", formData);
     return response;
 };
 
+// Register user
 export const register = async (formData) => {
     const response = await api.post("/register", formData);
     return response;
 };
 
+// Get current user (requires token)
 export const getCurrentUser = async (token) => {
     const response = await api.get("/me", {
         headers: {
-            Authorization: "Bearer " + token,
+            Authorization: `Bearer ${token}`,
         },
     });
     return response;
 };
-// Fetch courses data
-export const fetchCourses = async () => {
+
+// Fetch courses data (requires token)
+export const fetchCourses = async (token) => {
     try {
         console.log("Fetching courses...");
-        const response = await api.get("/api/courses");
+        const response = await api.get("/courses", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
         console.log("Response:", response);
         return response.data;
     } catch (error) {
@@ -35,11 +43,15 @@ export const fetchCourses = async () => {
     }
 };
 
-// Fetch user profile data
-export const fetchUserProfile = async () => {
+// Fetch user profile data (requires token)
+export const fetchUserProfile = async (token) => {
     try {
-        const response = await api.get("api/users"); // Endpoint disesuaikan
-        return response.data; // Pastikan struktur data sesuai dengan response API
+        const response = await api.get("/users", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data;
     } catch (error) {
         console.error("Error fetching user profile:", error);
         throw error;

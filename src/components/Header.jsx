@@ -1,5 +1,3 @@
-// src/components/Header.js
-
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Search } from "@mui/icons-material";
@@ -9,12 +7,13 @@ const Header = ({ searchTerm, setSearchTerm }) => {
     const navigate = useNavigate();
     const [dropdownVisible, setDropdownVisible] = useState(false);
     const { user, logout } = useAuth();
-    const dropdownRef = useRef(null); // To detect clicks outside
-    const profileButtonRef = useRef(null); // To detect clicks on the profile button
+    const dropdownRef = useRef(null);
+    const profileButtonRef = useRef(null);
 
+    // Safely handle null or undefined user
     const userProfile = user
-        ? { name: user.name || "Anonymous", photoUrl: user.photoUrl }
-        : null;
+        ? { name: user.name || "Anonymous", photoUrl: user.photoUrl || "" }
+        : { name: "Anonymous", photoUrl: "" };
 
     const handleSearch = (event) => {
         setSearchTerm(event.target.value);
@@ -37,7 +36,6 @@ const Header = ({ searchTerm, setSearchTerm }) => {
             .toUpperCase();
     };
 
-    // Handle clicks outside of dropdown or profile button
     const handleClickOutside = (e) => {
         if (
             dropdownRef.current &&
@@ -60,7 +58,7 @@ const Header = ({ searchTerm, setSearchTerm }) => {
         <header className="mb-8 flex flex-wrap items-center justify-between">
             <Link href="#" className="flex items-center">
                 <img
-                    src="./logo.png"
+                    src="/logo.png"
                     className="h-16 w-16 md:mr-4"
                     alt="Cerdas Financial"
                 />
@@ -80,7 +78,7 @@ const Header = ({ searchTerm, setSearchTerm }) => {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-500" />
                 </div>
                 <div
-                    ref={profileButtonRef} // Assign ref to the profile button
+                    ref={profileButtonRef}
                     className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-blue-500 font-bold text-white"
                     onClick={toggleDropdown}
                 >
@@ -96,7 +94,7 @@ const Header = ({ searchTerm, setSearchTerm }) => {
                 </div>
                 {dropdownVisible && (
                     <div
-                        ref={dropdownRef} // Assign ref to the dropdown
+                        ref={dropdownRef}
                         className="absolute right-0 mt-36 w-40 rounded-md border bg-white shadow-md "
                     >
                         <ul>

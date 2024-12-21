@@ -112,8 +112,8 @@ const HomePage = () => {
         localStorage.setItem(`${user.id}_lastViewedCourseId`, courseId);
     };
 
-    const filteredCourses = courses.filter(course => 
-        course.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const filteredCourses = courses.filter(course =>
+        course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -193,11 +193,11 @@ const HomePage = () => {
                         <p>No courses found</p>
                     )}
                 </div>
-                
+
                 <div className="flex justify-between items-center mt-4">
-                    <button 
-                        className="px-4 mb-16 py-2 bg-blue-500 text-white rounded" 
-                        onClick={handlePrev} 
+                    <button
+                        className="px-4 py-2 bg-blue-500 text-white rounded"
+                        onClick={handlePrev}
                         disabled={currentPage === 1}
                     >
                         Prev
@@ -205,9 +205,9 @@ const HomePage = () => {
                     <span>
                         Page {currentPage} of {totalPages}
                     </span>
-                    <button 
-                        className="px-4 py-2 bg-blue-500 text-white rounded" 
-                        onClick={handleNext} 
+                    <button
+                        className="px-4 py-2 bg-blue-500 text-white rounded"
+                        onClick={handleNext}
                         disabled={currentPage === totalPages}
                     >
                         Next

@@ -157,7 +157,7 @@ const HomePage = () => {
                                 description={recentlyViewed.description}
                                 progress={recentlyViewed.progress || 0}
                                 total={recentlyViewed.total || 1}
-                                imageUrl={recentlyViewed.imageUrl || "https://via.placeholder.com/300x200"}
+                                imageUrl={recentlyViewed.img_banner || "https://via.placeholder.com/300x200"}
                                 progressText={`${recentlyViewed.progress || 0}/${recentlyViewed.total || 1}`}
                                 showProgress={true}
                             />
@@ -183,7 +183,7 @@ const HomePage = () => {
                                     description={course.description}
                                     progress={course.progress || 0}
                                     total={course.total || 1}
-                                    imageUrl={course.imageUrl || "https://via.placeholder.com/300x200"}
+                                    imageUrl={course.img_banner || "https://via.placeholder.com/300x200"}
                                     progressText={`${course.progress || 0}/${course.total || 1}`}
                                     showProgress={false}
                                 />

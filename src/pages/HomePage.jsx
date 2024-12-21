@@ -1,130 +1,217 @@
-import { useState } from "react";
-import Card from "../components/Card";
-import { Search } from "@mui/icons-material"; // Import the Search icon
+import { useState, useEffect } from "react";
+import { Navigate, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Navigate } from "react-router-dom";
-
-// Data dummy
-const dummyCourses = [
-    {
-        id: 1,
-        name: "Financial Literacy 101",
-        description: "Learn the basics of financial literacy.",
-        progress: 50,
-        total: 100,
-        imageUrl: "https://via.placeholder.com/300x200",
-    },
-    {
-        id: 2,
-        name: "Investment Strategies",
-        description: "Explore different investment strategies for growth.",
-        progress: 30,
-        total: 100,
-        imageUrl: "https://via.placeholder.com/300x200",
-    },
-    {
-        id: 3,
-        name: "Personal Finance Management",
-        description: "Master personal finance for a better future.",
-        progress: 75,
-        total: 100,
-        imageUrl: "https://via.placeholder.com/300x200",
-    },
-];
+import Card from "../components/Card";
+import Header from "../components/Header";
+import { fetchCourses } from "../services/api";
 
 const HomePage = () => {
-    // Komentar bagian useDataFetcher
-    // const { courses, userProfile, loading, error } = useDataFetcher();
-
-    // Gunakan data dummy langsung
-    const courses = dummyCourses;
-    const userProfile = { photoUrl: "https://via.placeholder.com/40" }; // Dummy user profile
-    const loading = false; // Simulasikan tidak ada loading
-    const error = null; // Simulasikan tidak ada error
-
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
-    const { user } = useAuth();
+    const [courses, setCourses] = useState([]);
+    const [recentlyViewed, setRecentlyViewed] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [tokenExpired, setTokenExpired] = useState(false);
 
-    const handleSearch = (event) => {
-        setSearchTerm(event.target.value);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [coursesPerPage, setCoursesPerPage] = useState(4);
+
+    const { user, setUser } = useAuth();
+
+    useEffect(() => {
+        const updateCoursesPerPage = () => {
+            if (window.innerWidth <= 640) {
+                setCoursesPerPage(1);
+            } else if (window.innerWidth <= 1024) {
+                setCoursesPerPage(2);
+            } else {
+                setCoursesPerPage(4);
+            }
+        };
+
+        updateCoursesPerPage();
+        window.addEventListener("resize", updateCoursesPerPage);
+
+        return () => {
+            window.removeEventListener("resize", updateCoursesPerPage);
+        };
+    }, []);
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+        const storedToken = localStorage.getItem("access_token");
+
+        if (storedUser && storedToken) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+
+            const isTokenExpired = checkTokenExpiration(storedToken);
+            if (isTokenExpired) {
+                setTokenExpired(true);
+            }
+        }
+    }, [setUser]);
+
+    useEffect(() => {
+        if (!user || tokenExpired) {
+            navigate("/login");
+        }
+    }, [user, tokenExpired, navigate]);
+
+    useEffect(() => {
+        const loadCourses = async () => {
+            const accessToken = localStorage.getItem("access_token");
+
+            if (!accessToken) {
+                setLoading(false);
+                setError("User not authenticated");
+                return;
+            }
+
+            if (!user || !user.id) {
+                setLoading(false);
+                setError("User is not authenticated or user ID is missing");
+                return;
+            }
+
+            try {
+                const fetchedCourses = await fetchCourses(accessToken);
+                if (fetchedCourses?.data && Array.isArray(fetchedCourses.data)) {
+                    setCourses(fetchedCourses.data);
+
+                    const lastViewedCourseId = localStorage.getItem(`${user.id}_lastViewedCourseId`);
+                    if (lastViewedCourseId) {
+                        const course = fetchedCourses.data.find(course => course.id === lastViewedCourseId);
+                        setRecentlyViewed(course || null);
+                    }
+                } else {
+                    setError("Invalid data format");
+                }
+            } catch (err) {
+                console.error("Error fetching courses:", err);
+                setError("Failed to fetch courses");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadCourses();
+    }, [user]);
+
+    const checkTokenExpiration = (token) => {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const decodedPayload = JSON.parse(atob(base64));
+
+        const currentTime = Date.now() / 1000;
+        return decodedPayload.exp < currentTime;
     };
 
-    const filteredCourses = courses.filter((course) =>
-        course.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const handleCourseClick = (courseId) => {
+        localStorage.setItem(`${user.id}_lastViewedCourseId`, courseId);
+    };
+
+    const filteredCourses = courses.filter(course =>
+        course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        course.description.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (loading) return <p>Loading...</p>;
-    if (error) return <p>Error fetching data: {error.message}</p>;
+    const indexOfLastCourse = currentPage * coursesPerPage;
+    const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
+    const currentCourses = filteredCourses.slice(indexOfFirstCourse, indexOfLastCourse);
 
-    if (!user) return <Navigate to={"/login"} replace />;
+    const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
+
+    const handleNext = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handlePrev = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    if (loading) return <p>Loading...</p>;
+    if (error) return <p>Error fetching data: {error}</p>;
+
+    if (!user || tokenExpired) return <Navigate to="/login" replace />;
 
     return (
-        <div className="min-h-screen bg-gray-100 p-4 md:p-16">
-            <header className="mb-8 flex flex-wrap items-center justify-between">
-                <h1 className="mb-4 text-3xl font-bold md:mb-0">
-                    📈 Cerdas Financial
-                </h1>
-                <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <input
-                            type="text"
-                            placeholder="Search courses"
-                            value={searchTerm}
-                            onChange={handleSearch}
-                            className="w-64 rounded-full border border-gray-300 bg-gray-200 p-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 md:w-96" // Update width for PC
-                        />
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 transform text-gray-500" />
-                    </div>
-                    <img
-                        src={
-                            userProfile.photoUrl ||
-                            "https://via.placeholder.com/40"
-                        }
-                        alt="User Profile"
-                        className="h-10 w-10 rounded-full"
-                    />
-                </div>
-            </header>
+        <div className="min-h-screen bg-gray-100 p-4 md:p-8">
+            <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
             <section>
-                <h2 className="mb-4 text-xl font-bold">Recently Viewed</h2>
+                <h2 className="mb-4 text-xl text-blue-600 font-bold">Recently Viewed</h2>
                 <div className="flex flex-wrap justify-start gap-4">
-                    {" "}
-                    {/* Add justify-start to left-align */}
-                    {filteredCourses.map((course) => (
-                        <Card
-                            key={course.id}
-                            name={course.name}
-                            description={course.description}
-                            progress={course.progress || 0}
-                            total={course.total || 1}
-                            imageUrl={
-                                course.imageUrl ||
-                                "https://via.placeholder.com/300x200"
-                            }
-                        />
-                    ))}
+                    {recentlyViewed ? (
+                        <Link
+                            to={`/course/${recentlyViewed.id}`}
+                            onClick={() => handleCourseClick(recentlyViewed.id)}
+                        >
+                            <Card
+                                key={recentlyViewed.id}
+                                name={recentlyViewed.name}
+                                description={recentlyViewed.description}
+                                progress={recentlyViewed.progress || 0}
+                                total={recentlyViewed.total || 1}
+                                imageUrl={recentlyViewed.img_banner || "https://via.placeholder.com/300x200"}
+                                progressText={`${recentlyViewed.progress || 0}/${recentlyViewed.total || 1}`}
+                                showProgress={true}
+                            />
+                        </Link>
+                    ) : (
+                        <p>No recently viewed courses</p>
+                    )}
                 </div>
             </section>
-            <section className="mt-8">
-                <h2 className="mb-4 text-xl font-semibold text-gray-800">
-                    New Courses 🎉
-                </h2>
+
+            <section>
+                <h2 className="mb-4 mt-8 text-xl text-blue-600 font-bold">NEW COURSE</h2>
                 <div className="flex flex-wrap justify-start gap-4">
-                    {" "}
-                    {/* Add justify-start to left-align */}
-                    {filteredCourses.map((course) => (
-                        <Card
-                            key={course.id}
-                            name={course.name}
-                            description={course.description}
-                            progress={course.progress || 0}
-                            total={course.total || 1}
-                            imageUrl={
-                                course.imageUrl ||
-                                "https://via.placeholder.com/300x200"
-                            }
-                        />
-                    ))}
+                    {currentCourses.length > 0 ? (
+                        currentCourses.map((course) => (
+                            <Link
+                                to={`/course/${course.id}`}
+                                onClick={() => handleCourseClick(course.id)}
+                                key={course.id}
+                            >
+                                <Card
+                                    name={course.name}
+                                    description={course.description}
+                                    progress={course.progress || 0}
+                                    total={course.total || 1}
+                                    imageUrl={course.img_banner || "https://via.placeholder.com/300x200"}
+                                    progressText={`${course.progress || 0}/${course.total || 1}`}
+                                    showProgress={false}
+                                />
+                            </Link>
+                        ))
+                    ) : (
+                        <p>No courses found</p>
+                    )}
+                </div>
+
+                <div className="flex justify-between items-center mt-4">
+                    <button
+                        className="px-4 py-2 bg-blue-500 text-white rounded"
+                        onClick={handlePrev}
+                        disabled={currentPage === 1}
+                    >
+                        Prev
+                    </button>
+                    <span>
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                        className="px-4 py-2 bg-blue-500 text-white rounded"
+                        onClick={handleNext}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </button>
                 </div>
             </section>
         </div>

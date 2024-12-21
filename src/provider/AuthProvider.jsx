@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
                 const accessToken = localStorage.getItem("access_token");
                 const result = await getCurrentUser(accessToken);
 
-                if (result.data.status != 200) {
+                if (result.data.status !== 200) {
                     throw result.data.msg;
                 }
 
@@ -37,8 +37,14 @@ export const AuthProvider = ({ children }) => {
         setState(users);
     };
 
+    const logout = () => {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        setState(null); // Clear user data from state
+    };
+
     return (
-        <AuthContext.Provider value={{ user: state, handleLogin }}>
+        <AuthContext.Provider value={{ user: state, handleLogin, logout }}>
             {children}
         </AuthContext.Provider>
     );

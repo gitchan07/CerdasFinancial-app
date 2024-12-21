@@ -1,21 +1,64 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import {
+    fetchCourseData,
+    getSubscriptionStatus,
+    subscribeToCourse,
+} from "../services/api"; // Import the updated getCurrentUser
+import RenderVideoCourse from "../components/RenderVideoCourse";
+import SubscribePopup from "../components/PopupSubcriber";
+import Header from "../components/Header";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-    faPause,
     faAngleRight,
     faAngleLeft,
+    faMobileAlt,
+    faCertificate,
+    faPlayCircle,
 } from "@fortawesome/free-solid-svg-icons";
 
 function Course() {
+    const [searchTerm, setSearchTerm] = useState("");
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
     const [courseData, setCourseData] = useState(null);
     const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [isSubscribed, setIsSubscribed] = useState(false);
-    const videoRef = useRef(null);
+    const [isSubscribed, setIsSubscribed] = useState(false); // Track subscription status
     const [step, setStep] = useState(1);
+    const [courseId] = useState(useParams().courseId);
+    const [selectedPrice, setSelectedPrice] = useState(null);
+    const [showSubscribePopup, setShowSubscribePopup] = useState(false);
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+        navigate(`/home?search=${e.target.value}`); // Redirect to HomePage with search term
+    };
+
+    // Fetch course and user data
+    useEffect(() => {
+        const fetchData = async () => {
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                console.error("No token found");
+                return;
+            }
+
+            try {
+                // Fetch course data
+                const courseData = await fetchCourseData(courseId, token);
+                setCourseData(courseData);
+
+                // Fetch current user data to check subscription status
+                const isSubscribed = await getSubscriptionStatus(token); // Get subscription status
+                setIsSubscribed(isSubscribed); // Set the subscription status in state
+            } catch (error) {
+                console.error("Error fetching course or user data:", error);
+            }
+        };
+
+        fetchData();
+    }, [courseId]);
 
     const nextStep = () => {
         setStep((prevStep) => (prevStep === 2 ? 1 : prevStep + 1));
@@ -25,249 +68,241 @@ function Course() {
         setStep((prevStep) => (prevStep === 1 ? 2 : prevStep - 1));
     };
 
-    const startPauseVideo = () => {
-        if (isVideoPlaying) {
-            videoRef.current.pause();
-        } else {
-            videoRef.current.play();
-        }
-        setIsVideoPlaying(!isVideoPlaying);
-    };
-
-    const updateTime = () => {
-        if (videoRef.current) {
-            setCurrentTime(videoRef.current.currentTime);
-            setDuration(videoRef.current.duration);
-        }
-    };
-
-    useEffect(() => {
-        const videoElement = videoRef.current;
-        const interval = setInterval(updateTime, 1000);
-        return () => {
-            clearInterval(interval);
-        };
-    }, []);
-
-    useEffect(() => {
-        console.log("Fetching course data...");
-
-        fetch("/data/detailCourse.json")
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error("Network response was not ok");
-                }
-                return response.json();
-            })
-            .then((data) => {
-                console.log("Fetched course data:", data);
-                setCourseData(data.course);
-            })
-            .catch((error) => {
-                console.error("Error fetching course data:", error);
-            });
-    }, []);
-
     const handleVideoSelect = (index) => {
         if (index >= 2 && !isSubscribed) {
-            alert("Please subscribe to access this video.");
+            setShowSubscribePopup(true);
             return;
         }
-        setSelectedVideoIndex(index);
+
         setIsVideoPlaying(false);
-        if (videoRef.current) {
-            videoRef.current.currentTime = 0;
+        setSelectedVideoIndex(index);
+    };
+
+    const handleSubscribeClick = async () => {
+        if (!selectedPrice) {
+            alert("Please select a subscription plan.");
+            return;
+        }
+
+        // Retrieve token from localStorage
+        const token = localStorage.getItem("access_token");
+
+        // Check if the token exists
+        if (!token) {
+            alert("You must be logged in to subscribe.");
+            return;
+        }
+
+        try {
+            // Call the subscribeToCourse function to subscribe the user
+            const response = await subscribeToCourse(selectedPrice, token);
+            if (response.status === 201) {
+                setIsSubscribed(true); // Set the user as subscribed
+                setShowSubscribePopup(false);
+                alert("Subscription successful!");
+            }
+        } catch (error) {
+            console.error("Error during subscription:", error);
+            if (error.response && error.response.status === 401) {
+                alert("Your session has expired. Please log in again.");
+                // Optionally, redirect the user to the login page
+                window.location.href = "/login";
+            } else {
+                alert("Subscription failed. Please try again.");
+            }
         }
     };
 
-    useEffect(() => {
-        if (videoRef.current && isVideoPlaying) {
-            videoRef.current.play();
+    const renderIcon = (key) => {
+        switch (key) {
+            case "play":
+                return (
+                    <FontAwesomeIcon
+                        icon={faPlayCircle}
+                        className="text-xl text-blue-500"
+                    />
+                );
+            case "mobile":
+                return (
+                    <FontAwesomeIcon
+                        icon={faMobileAlt}
+                        className="text-xl text-green-500"
+                    />
+                );
+            case "certificate":
+                return (
+                    <FontAwesomeIcon
+                        icon={faCertificate}
+                        className="text-xl text-yellow-500"
+                    />
+                );
+            default:
+                return null;
         }
-    }, [selectedVideoIndex]);
-
-    const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-
-    const handleSearch = (event) => {
-        setSearchTerm(event.target.value);
     };
 
     return (
         <div className="max-w-screen flex flex-col items-center justify-center">
-            <header className="mb-2 flex w-full flex-wrap items-center justify-between px-10 pb-2 pt-4">
-                <h1 className="mb-4 text-3xl font-bold md:mb-0">
-                    📈 Cerdas Financial
-                </h1>
-                <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <input
-                            type="text"
-                            placeholder="Search courses"
-                            value={searchTerm}
-                            onChange={handleSearch}
-                            className="w-64 rounded-full border border-gray-300 bg-gray-200 p-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-500 md:w-96"
-                        />
-                    </div>
-                    <img
-                        src="https://via.placeholder.com/40"
-                        alt="User Profile"
-                        className="h-10 w-10 rounded-full"
-                    />
-                </div>
-            </header>
+            {/* Header with sticky positioning */}
 
-            <div
-                className="group relative flex h-[550px] w-10/12 justify-end overflow-hidden rounded-2xl bg-black"
-                onClick={startPauseVideo}
-            >
-                <div
-                    className={`absolute left-0 top-0 h-full w-full ${!isVideoPlaying ? "bg-opacity-1 bg-black" : "opacity-100"}`}
-                >
-                    <video
-                        ref={videoRef}
-                        src={courseData?.videos?.[selectedVideoIndex]?.url}
-                        alt="Video"
-                        className="rounded-lg object-cover"
-                        style={{
-                            opacity: !isVideoPlaying ? 0.5 : 1,
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "fill",
-                        }}
-                    />
-                </div>
-
-                {!isVideoPlaying && (
-                    <img
-                        src="/asset/playall.png"
-                        alt="Klik untuk memutar"
-                        className="absolute left-1/2 top-1/2 h-auto w-auto -translate-x-1/2 -translate-y-1/2 transform cursor-pointer object-contain"
-                    />
-                )}
-
-                {isVideoPlaying && (
-                    <div
-                        className="pause-icon absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform opacity-0 group-hover:opacity-100"
-                        onClick={startPauseVideo}
-                    >
-                        <FontAwesomeIcon
-                            icon={faPause}
-                            className="text-8xl text-blue-600"
-                        />
-                    </div>
-                )}
-
-                <div className="absolute bottom-0 left-0 h-2 w-full bg-gray-300">
-                    <div
-                        style={{ width: `${progress}%` }}
-                        className="h-full bg-blue-600"
-                    />
-                </div>
+            <div className="z-10 w-full px-10">
+                <Header
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    onSearchChange={handleSearchChange}
+                    className="sticky top-0 z-10 bg-white p-10" // Sticky header with background and shadow
+                />
             </div>
 
-            <div className="mt-8 flex w-10/12 flex-col justify-between gap-10 text-justify lg:flex-row">
-                <div className="flex w-full lg:w-1/2">
-                    {step === 1 && (
-                        <div className="lignt-center mt-4 flex items-center justify-center px-4">
-                            <FontAwesomeIcon
-                                icon={faAngleLeft}
-                                className="cursor-pointer text-5xl text-blue-600"
-                                onClick={nextStep}
-                            />
-                        </div>
-                    )}
+            {/* Main content with margin to account for sticky header */}
+            <div className="flex w-full flex-col items-center justify-center">
+                {" "}
+                {/* Added margin-top */}
+                {/* Video Player */}
+                {courseData && (
+                    <RenderVideoCourse
+                        videoUrl={
+                            courseData?.contents?.[selectedVideoIndex]
+                                ?.video_url
+                        }
+                        isVideoPlaying={isVideoPlaying}
+                        setIsVideoPlaying={setIsVideoPlaying}
+                        currentTime={currentTime}
+                        setCurrentTime={setCurrentTime}
+                        duration={duration}
+                        selectedVideoIndex={selectedVideoIndex}
+                    />
+                )}
+                {/* Course Details and Video List */}
+                <div className="mt-8 flex w-10/12 flex-col justify-between gap-10 text-justify lg:flex-row">
+                    {/* Course Info */}
+                    <div className="flex w-full lg:w-1/2">
+                        {step === 1 && (
+                            <div className="mt-4 flex items-center justify-between px-4">
+                                <FontAwesomeIcon
+                                    icon={faAngleLeft}
+                                    className="cursor-pointer text-5xl text-blue-600"
+                                    onClick={prevStep}
+                                />
+                            </div>
+                        )}
 
-                    {step === 2 && (
-                        <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon
-                                icon={faAngleLeft}
-                                className="cursor-pointer text-5xl text-blue-600"
-                                onClick={nextStep}
-                            />
-                        </div>
-                    )}
+                        {step === 2 && (
+                            <div className="mt-4 flex items-center justify-between px-4">
+                                <FontAwesomeIcon
+                                    icon={faAngleLeft}
+                                    className="cursor-pointer text-5xl text-blue-600"
+                                    onClick={prevStep}
+                                />
+                            </div>
+                        )}
 
-                    {step === 2 && (
-                        <div className="w-full p-4 text-left">
-                            <h3 className="mb-4 flex flex-col text-4xl font-bold">
-                                Course Includes
-                            </h3>
-                            <ul className="flex flex-col flex-wrap gap-2">
-                                {Array.isArray(courseData?.includes) &&
-                                courseData?.includes.length > 0 ? (
-                                    courseData.includes.map((item, index) => (
-                                        <li key={index}>{item} </li>
-                                    ))
-                                ) : (
-                                    <li>No data available</li>
+                        {step === 1 && (
+                            <div className="p-4 px-8">
+                                {courseData && (
+                                    <>
+                                        <h2 className="mb-4 text-left text-3xl font-bold">
+                                            {courseData.name}
+                                        </h2>
+                                        <p>
+                                            {courseData.contents?.description}
+                                        </p>
+                                        <p>
+                                            {
+                                                courseData?.contents?.[
+                                                    selectedVideoIndex
+                                                ]?.description
+                                            }
+                                        </p>
+                                    </>
                                 )}
-                            </ul>
-                        </div>
-                    )}
+                            </div>
+                        )}
 
-                    {step === 1 && (
-                        <div className="p-4 px-8">
-                            {courseData && (
-                                <>
-                                    <h2 className="mb-4 text-center text-4xl font-bold">
-                                        {courseData.title}
-                                    </h2>
-                                    <p>{courseData.description}</p>
-                                    <p>
-                                        {
-                                            courseData?.videos?.[
-                                                selectedVideoIndex
-                                            ]?.description
-                                        }
-                                    </p>
-                                </>
-                            )}
-                        </div>
-                    )}
+                        {step === 2 && (
+                            <div className="w-full p-4 px-8 text-left">
+                                <h3 className="mb-4 flex flex-col text-3xl font-bold">
+                                    Course Includes
+                                </h3>
+                                <div className="carousel-container flex overflow-x-auto">
+                                    {courseData?.detail ? (
+                                        Object.entries(
+                                            JSON.parse(courseData.detail)
+                                        ).map(([key, value], index) => (
+                                            <div
+                                                key={index}
+                                                className="carousel-item w-46 mx-2 flex-none rounded-lg bg-gray-100 p-4"
+                                            >
+                                                {renderIcon(key)}
+                                                <h4 className="font-bold">
+                                                    {key}
+                                                </h4>
+                                                <p>{value}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div>No data available</div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
-                    {step === 1 && (
-                        <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon
-                                icon={faAngleRight}
-                                className="cursor-pointer text-5xl text-blue-600"
-                                onClick={nextStep}
-                            />
-                        </div>
-                    )}
+                        {step === 1 && (
+                            <div className="mt-4 flex items-center justify-between px-4">
+                                <FontAwesomeIcon
+                                    icon={faAngleRight}
+                                    className="cursor-pointer text-5xl text-blue-600"
+                                    onClick={nextStep}
+                                />
+                            </div>
+                        )}
 
-                    {step === 2 && (
-                        <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon
-                                icon={faAngleRight}
-                                className="cursor-pointer text-5xl text-blue-600"
-                                onClick={nextStep}
-                            />
-                        </div>
-                    )}
-                </div>
+                        {step === 2 && (
+                            <div className="mt-4 flex items-center justify-between px-4">
+                                <FontAwesomeIcon
+                                    icon={faAngleRight}
+                                    className="cursor-pointer text-5xl text-blue-600"
+                                    onClick={nextStep}
+                                />
+                            </div>
+                        )}
+                    </div>
 
-                <div className="w-full bg-white p-4 lg:w-1/2">
-                    <div className="space-y-2">
-                        {courseData?.videos?.map((video, index) => (
-                            <ul
-                                key={index}
-                                className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex ? "border-blue-600 bg-blue-400 text-white" : "border-blue-300 bg-blue-100 text-black"}`}
-                                onClick={() => handleVideoSelect(index)}
-                                style={{
-                                    cursor:
-                                        index >= 2 && !isSubscribed
-                                            ? "not-allowed"
-                                            : "pointer",
-                                    opacity:
-                                        index >= 2 && !isSubscribed ? 0.5 : 1,
-                                }}
-                            >
-                                <li>{video.title}</li>
-                            </ul>
-                        ))}
+                    {/* Video List */}
+                    <div className="w-full bg-white p-4 lg:block lg:w-1/2">
+                        <div className="space-y-2">
+                            {courseData?.contents?.map((video, index) => (
+                                <ul
+                                    key={index}
+                                    className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex ? "border-blue-600 bg-blue-400 text-white" : "border-blue-300 bg-blue-100 text-black"}`}
+                                    onClick={() => handleVideoSelect(index)} // Update the selected video index
+                                    style={{
+                                        cursor:
+                                            index >= 2 && !isSubscribed
+                                                ? "not-allowed"
+                                                : "pointer",
+                                        opacity:
+                                            index >= 2 && !isSubscribed
+                                                ? 0.5
+                                                : 1,
+                                    }}
+                                >
+                                    <li>{video.name}</li>
+                                </ul>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Show Subscribe Popup */}
+            <SubscribePopup
+                show={showSubscribePopup}
+                setShowSubscribePopup={setShowSubscribePopup}
+                setSelectedPrice={setSelectedPrice}
+                handleSubscribeClick={handleSubscribeClick}
+                selectedPrice={selectedPrice}
+            />
         </div>
     );
 }

@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchCourseData, getSubscriptionStatus, subscribeToCourse } from "../services/api"; // Import the updated getCurrentUser
+import {
+    fetchCourseData,
+    getSubscriptionStatus,
+    subscribeToCourse,
+} from "../services/api"; // Import the updated getCurrentUser
 import RenderVideoCourse from "../components/RenderVideoCourse";
 import SubscribePopup from "../components/PopupSubcriber";
+import Header from "../components/Header";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
     faAngleRight,
@@ -13,6 +18,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 function Course() {
+    const [searchTerm, setSearchTerm] = useState("");
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -106,15 +112,24 @@ function Course() {
         switch (key) {
             case "play":
                 return (
-                    <FontAwesomeIcon icon={faPlayCircle} className="text-xl text-blue-500" />
+                    <FontAwesomeIcon
+                        icon={faPlayCircle}
+                        className="text-xl text-blue-500"
+                    />
                 );
             case "mobile":
                 return (
-                    <FontAwesomeIcon icon={faMobileAlt} className="text-xl text-green-500" />
+                    <FontAwesomeIcon
+                        icon={faMobileAlt}
+                        className="text-xl text-green-500"
+                    />
                 );
             case "certificate":
                 return (
-                    <FontAwesomeIcon icon={faCertificate} className="text-xl text-yellow-500" />
+                    <FontAwesomeIcon
+                        icon={faCertificate}
+                        className="text-xl text-yellow-500"
+                    />
                 );
             default:
                 return null;
@@ -123,95 +138,138 @@ function Course() {
 
     return (
         <div className="max-w-screen flex flex-col items-center justify-center">
-            {/* Video Player */}
-            {courseData && (
-                <RenderVideoCourse
-                    videoUrl={courseData?.contents?.[selectedVideoIndex]?.video_url}
-                    isVideoPlaying={isVideoPlaying}
-                    setIsVideoPlaying={setIsVideoPlaying}
-                    currentTime={currentTime}
-                    setCurrentTime={setCurrentTime}
-                    duration={duration}
-                    selectedVideoIndex={selectedVideoIndex}
-                />
-            )}
+            {/* Header with sticky positioning */}
 
-            {/* Course Details and Video List */}
-            <div className="mt-8 flex w-10/12 flex-col justify-between gap-10 text-justify lg:flex-row">
-                {/* Course Info */}
-                <div className="flex w-full lg:w-1/2">
-                    {step === 1 && (
-                        <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon icon={faAngleLeft} className="cursor-pointer text-5xl text-blue-600" onClick={prevStep} />
-                        </div>
-                    )}
+            <div className="w-full px-10 z-10"> 
+            <Header
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                className="sticky top-0 z-10 bg-white p-10" // Sticky header with background and shadow
+            />
+            </div>
 
-                    {step === 2 && (
-                        <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon icon={faAngleLeft} className="cursor-pointer text-5xl text-blue-600" onClick={prevStep} />
-                        </div>
-                    )}
+            {/* Main content with margin to account for sticky header */}
+            <div className=" w-full flex flex-col items-center justify-center"> {/* Added margin-top */}
+                {/* Video Player */}
+                {courseData && (
+                    <RenderVideoCourse
+                        videoUrl={courseData?.contents?.[selectedVideoIndex]?.video_url}
+                        isVideoPlaying={isVideoPlaying}
+                        setIsVideoPlaying={setIsVideoPlaying}
+                        currentTime={currentTime}
+                        setCurrentTime={setCurrentTime}
+                        duration={duration}
+                        selectedVideoIndex={selectedVideoIndex}
+                    />
+                )}
+                {/* Course Details and Video List */}
+                <div className="mt-8 flex w-10/12 flex-col justify-between gap-10 text-justify lg:flex-row">
+                    {/* Course Info */}
+                    <div className="flex w-full lg:w-1/2">
+                        {step === 1 && (
+                            <div className="mt-4 flex items-center justify-between px-4">
+                                <FontAwesomeIcon
+                                    icon={faAngleLeft}
+                                    className="cursor-pointer text-5xl text-blue-600"
+                                    onClick={prevStep}
+                                />
+                            </div>
+                        )}
 
-                    {step === 1 && (
-                        <div className="p-4 px-8">
-                            {courseData && (
-                                <>
-                                    <h2 className="mb-4 text-left text-3xl font-bold">{courseData.name}</h2>
-                                    <p>{courseData.contents?.description}</p>
-                                    <p>{courseData?.contents?.[selectedVideoIndex]?.description}</p>
-                                </>
-                            )}
-                        </div>
-                    )}
+                        {step === 2 && (
+                            <div className="mt-4 flex items-center justify-between px-4">
+                                <FontAwesomeIcon
+                                    icon={faAngleLeft}
+                                    className="cursor-pointer text-5xl text-blue-600"
+                                    onClick={prevStep}
+                                />
+                            </div>
+                        )}
 
-                    {step === 2 && (
-                        <div className="w-full p-4 px-8 text-left">
-                            <h3 className="mb-4 flex flex-col text-3xl font-bold">Course Includes</h3>
-                            <div className="carousel-container flex overflow-x-auto">
-                                {courseData?.detail ? (
-                                    Object.entries(JSON.parse(courseData.detail)).map(([key, value], index) => (
-                                        <div key={index} className="carousel-item w-46 mx-2 flex-none rounded-lg bg-gray-100 p-4">
-                                            {renderIcon(key)}
-                                            <h4 className="font-bold">{key}</h4>
-                                            <p>{value}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div>No data available</div>
+                        {step === 1 && (
+                            <div className="p-4 px-8">
+                                {courseData && (
+                                    <>
+                                        <h2 className="mb-4 text-left text-3xl font-bold">
+                                            {courseData.name}
+                                        </h2>
+                                        <p>{courseData.contents?.description}</p>
+                                        <p>
+                                            {
+                                                courseData?.contents?.[
+                                                    selectedVideoIndex
+                                                ]?.description
+                                            }
+                                        </p>
+                                    </>
                                 )}
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {step === 1 && (
-                        <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon icon={faAngleRight} className="cursor-pointer text-5xl text-blue-600" onClick={nextStep} />
-                        </div>
-                    )}
+                        {step === 2 && (
+                            <div className="w-full p-4 px-8 text-left">
+                                <h3 className="mb-4 flex flex-col text-3xl font-bold">
+                                    Course Includes
+                                </h3>
+                                <div className="carousel-container flex overflow-x-auto">
+                                    {courseData?.detail ? (
+                                        Object.entries(
+                                            JSON.parse(courseData.detail)
+                                        ).map(([key, value], index) => (
+                                            <div
+                                                key={index}
+                                                className="carousel-item w-46 mx-2 flex-none rounded-lg bg-gray-100 p-4"
+                                            >
+                                                {renderIcon(key)}
+                                                <h4 className="font-bold">{key}</h4>
+                                                <p>{value}</p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div>No data available</div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
 
-                    {step === 2 && (
-                        <div className="mt-4 flex items-center justify-between px-4">
-                            <FontAwesomeIcon icon={faAngleRight} className="cursor-pointer text-5xl text-blue-600" onClick={nextStep} />
-                        </div>
-                    )}
-                </div>
+                        {step === 1 && (
+                            <div className="mt-4 flex items-center justify-between px-4">
+                                <FontAwesomeIcon
+                                    icon={faAngleRight}
+                                    className="cursor-pointer text-5xl text-blue-600"
+                                    onClick={nextStep}
+                                />
+                            </div>
+                        )}
 
-                {/* Video List */}
-                <div className="w-full bg-white p-4 lg:block lg:w-1/2">
-                    <div className="space-y-2">
-                        {courseData?.contents?.map((video, index) => (
-                            <ul
-                                key={index}
-                                className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex ? "border-blue-600 bg-blue-400 text-white" : "border-blue-300 bg-blue-100 text-black"}`}
-                                onClick={() => handleVideoSelect(index)} // Update the selected video index
-                                style={{
-                                    cursor: index >= 2 && !isSubscribed ? "not-allowed" : "pointer",
-                                    opacity: index >= 2 && !isSubscribed ? 0.5 : 1,
-                                }}
-                            >
-                                <li>{video.name}</li>
-                            </ul>
-                        ))}
+                        {step === 2 && (
+                            <div className="mt-4 flex items-center justify-between px-4">
+                                <FontAwesomeIcon
+                                    icon={faAngleRight}
+                                    className="cursor-pointer text-5xl text-blue-600"
+                                    onClick={nextStep}
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Video List */}
+                    <div className="w-full bg-white p-4 lg:block lg:w-1/2">
+                        <div className="space-y-2">
+                            {courseData?.contents?.map((video, index) => (
+                                <ul
+                                    key={index}
+                                    className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex ? "border-blue-600 bg-blue-400 text-white" : "border-blue-300 bg-blue-100 text-black"}`}
+                                    onClick={() => handleVideoSelect(index)} // Update the selected video index
+                                    style={{
+                                        cursor: index >= 2 && !isSubscribed ? "not-allowed" : "pointer",
+                                        opacity: index >= 2 && !isSubscribed ? 0.5 : 1,
+                                    }}
+                                >
+                                    <li>{video.name}</li>
+                                </ul>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -10,7 +10,7 @@ const Card = ({
     showProgress,
 }) => {
     return (
-        <div className="flex w-80 flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-md transition-shadow hover:shadow-lg">
+        <div className="flex w-80 h-[490px] mb-8 flex-col rounded-lg border border-gray-200 bg-white p-4 shadow-md transition-shadow hover:shadow-lg">
             <img
                 src={imageUrl}
                 alt={name}

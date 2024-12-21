@@ -30,6 +30,11 @@ function Course() {
     const [selectedPrice, setSelectedPrice] = useState(null);
     const [showSubscribePopup, setShowSubscribePopup] = useState(false);
 
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+        navigate(`/home?search=${e.target.value}`); // Redirect to HomePage with search term
+    };
+
     // Fetch course and user data
     useEffect(() => {
         const fetchData = async () => {
@@ -140,20 +145,26 @@ function Course() {
         <div className="max-w-screen flex flex-col items-center justify-center">
             {/* Header with sticky positioning */}
 
-            <div className="w-full px-10 z-10"> 
-            <Header
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                className="sticky top-0 z-10 bg-white p-10" // Sticky header with background and shadow
-            />
+            <div className="z-10 w-full px-10">
+                <Header
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    onSearchChange={handleSearchChange}
+                    className="sticky top-0 z-10 bg-white p-10" // Sticky header with background and shadow
+                />
             </div>
 
             {/* Main content with margin to account for sticky header */}
-            <div className=" w-full flex flex-col items-center justify-center"> {/* Added margin-top */}
+            <div className="flex w-full flex-col items-center justify-center">
+                {" "}
+                {/* Added margin-top */}
                 {/* Video Player */}
                 {courseData && (
                     <RenderVideoCourse
-                        videoUrl={courseData?.contents?.[selectedVideoIndex]?.video_url}
+                        videoUrl={
+                            courseData?.contents?.[selectedVideoIndex]
+                                ?.video_url
+                        }
                         isVideoPlaying={isVideoPlaying}
                         setIsVideoPlaying={setIsVideoPlaying}
                         currentTime={currentTime}
@@ -193,7 +204,9 @@ function Course() {
                                         <h2 className="mb-4 text-left text-3xl font-bold">
                                             {courseData.name}
                                         </h2>
-                                        <p>{courseData.contents?.description}</p>
+                                        <p>
+                                            {courseData.contents?.description}
+                                        </p>
                                         <p>
                                             {
                                                 courseData?.contents?.[
@@ -221,7 +234,9 @@ function Course() {
                                                 className="carousel-item w-46 mx-2 flex-none rounded-lg bg-gray-100 p-4"
                                             >
                                                 {renderIcon(key)}
-                                                <h4 className="font-bold">{key}</h4>
+                                                <h4 className="font-bold">
+                                                    {key}
+                                                </h4>
                                                 <p>{value}</p>
                                             </div>
                                         ))
@@ -262,8 +277,14 @@ function Course() {
                                     className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex ? "border-blue-600 bg-blue-400 text-white" : "border-blue-300 bg-blue-100 text-black"}`}
                                     onClick={() => handleVideoSelect(index)} // Update the selected video index
                                     style={{
-                                        cursor: index >= 2 && !isSubscribed ? "not-allowed" : "pointer",
-                                        opacity: index >= 2 && !isSubscribed ? 0.5 : 1,
+                                        cursor:
+                                            index >= 2 && !isSubscribed
+                                                ? "not-allowed"
+                                                : "pointer",
+                                        opacity:
+                                            index >= 2 && !isSubscribed
+                                                ? 0.5
+                                                : 1,
                                     }}
                                 >
                                     <li>{video.name}</li>

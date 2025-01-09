@@ -7,6 +7,7 @@ import RegisterPage from "./pages/RegisterPage";
 import HomePage from "./pages/HomePage";
 import { AuthProvider } from "./provider/AuthProvider";
 import UserProfile from "./pages/UserProfile";
+import NotFound from "./pages/NotFound";
 
 function App() {
     return (
@@ -19,6 +20,7 @@ function App() {
                     <Route path="/home" element={<HomePage />} />
                     <Route path="/course/:courseId" element={<Course />} />
                     <Route path="/profile" element={<UserProfile />} />
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </BrowserRouter>
         </AuthProvider>

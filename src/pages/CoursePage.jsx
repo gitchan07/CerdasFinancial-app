@@ -4,7 +4,7 @@ import {
     fetchCourseData,
     getSubscriptionStatus,
     subscribeToCourse,
-} from "../services/api"; // Import the updated getCurrentUser
+} from "../services/api";
 import RenderVideoCourse from "../components/RenderVideoCourse";
 import SubscribePopup from "../components/PopupSubcriber";
 import Header from "../components/Header";
@@ -24,7 +24,7 @@ function Course() {
     const [duration, setDuration] = useState(0);
     const [courseData, setCourseData] = useState(null);
     const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
-    const [isSubscribed, setIsSubscribed] = useState(false); // Track subscription status
+    const [isSubscribed, setIsSubscribed] = useState(false);
     const [step, setStep] = useState(1);
     const [courseId] = useState(useParams().courseId);
     const [selectedPrice, setSelectedPrice] = useState(null);
@@ -32,10 +32,9 @@ function Course() {
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
-        navigate(`/home?search=${e.target.value}`); // Redirect to HomePage with search term
+        navigate(`/home?search=${e.target.value}`);
     };
 
-    // Fetch course and user data
     useEffect(() => {
         const fetchData = async () => {
             const token = localStorage.getItem("access_token");
@@ -45,13 +44,11 @@ function Course() {
             }
 
             try {
-                // Fetch course data
                 const courseData = await fetchCourseData(courseId, token);
                 setCourseData(courseData);
 
-                // Fetch current user data to check subscription status
-                const isSubscribed = await getSubscriptionStatus(token); // Get subscription status
-                setIsSubscribed(isSubscribed); // Set the subscription status in state
+                const isSubscribed = await getSubscriptionStatus(token);
+                setIsSubscribed(isSubscribed);
             } catch (error) {
                 console.error("Error fetching course or user data:", error);
             }
@@ -84,10 +81,8 @@ function Course() {
             return;
         }
 
-        // Retrieve token from localStorage
         const token = localStorage.getItem("access_token");
 
-        // Check if the token exists
         if (!token) {
             alert("You must be logged in to subscribe.");
             return;
@@ -97,7 +92,7 @@ function Course() {
             // Call the subscribeToCourse function to subscribe the user
             const response = await subscribeToCourse(selectedPrice, token);
             if (response.status === 201) {
-                setIsSubscribed(true); // Set the user as subscribed
+                setIsSubscribed(true); 
                 setShowSubscribePopup(false);
                 alert("Subscription successful!");
             }
@@ -105,7 +100,6 @@ function Course() {
             console.error("Error during subscription:", error);
             if (error.response && error.response.status === 401) {
                 alert("Your session has expired. Please log in again.");
-                // Optionally, redirect the user to the login page
                 window.location.href = "/login";
             } else {
                 alert("Subscription failed. Please try again.");
@@ -150,15 +144,13 @@ function Course() {
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
                     onSearchChange={handleSearchChange}
-                    className="sticky top-0 z-10 bg-white p-10" // Sticky header with background and shadow
+                    className="sticky top-0 z-10 bg-white p-10"
                 />
             </div>
 
             {/* Main content with margin to account for sticky header */}
             <div className="flex w-full flex-col items-center justify-center">
                 {" "}
-                {/* Added margin-top */}
-                {/* Video Player */}
                 {courseData && (
                     <RenderVideoCourse
                         videoUrl={
@@ -169,8 +161,8 @@ function Course() {
                         setIsVideoPlaying={setIsVideoPlaying}
                         currentTime={currentTime}
                         setCurrentTime={setCurrentTime}
-                        duration={duration}
                         selectedVideoIndex={selectedVideoIndex}
+                        courseId={courseId} // Pass courseId here
                     />
                 )}
                 {/* Course Details and Video List */}
@@ -275,7 +267,7 @@ function Course() {
                                 <ul
                                     key={index}
                                     className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex ? "border-blue-600 bg-blue-400 text-white" : "border-blue-300 bg-blue-100 text-black"}`}
-                                    onClick={() => handleVideoSelect(index)} // Update the selected video index
+                                    onClick={() => handleVideoSelect(index)}
                                     style={{
                                         cursor:
                                             index >= 2 && !isSubscribed

@@ -9,9 +9,52 @@ const RenderVideoCourse = ({
     currentTime,
     setCurrentTime,
     selectedVideoIndex,
+    courseId,
 }) => {
     const videoRef = useRef(null);
-    const [duration, setDuration] = useState(0); // Adding state for duration
+    const [duration, setDuration] = useState(0);
+
+    // Save currentTime and isVideoPlaying status to localStorage
+    const saveToLocalStorage = () => {
+        if (videoRef.current) {
+            localStorage.setItem(
+                `course-${courseId}-video-${selectedVideoIndex}-currentTime`,
+                videoRef.current.currentTime
+            );
+            localStorage.setItem(
+                `course-${courseId}-video-${selectedVideoIndex}-isPlaying`,
+                isVideoPlaying
+            );
+        }
+    };
+
+    // Load saved currentTime and isVideoPlaying from localStorage
+    const loadFromLocalStorage = () => {
+        console.log("Loading from localStorage for video index:", selectedVideoIndex);
+
+        const savedCurrentTime = localStorage.getItem(
+            `course-${courseId}-video-${selectedVideoIndex}-currentTime`
+        );
+        const savedIsPlaying = localStorage.getItem(
+            `course-${courseId}-video-${selectedVideoIndex}-isPlaying`
+        );
+
+        console.log("Saved currentTime:", savedCurrentTime);
+        console.log("Saved isPlaying:", savedIsPlaying);
+
+        if (savedCurrentTime !== null) {
+            const parsedTime = parseFloat(savedCurrentTime);
+            if (!isNaN(parsedTime)) {
+                setCurrentTime(parsedTime);
+            } else {
+                setCurrentTime(0); 
+            }
+        }
+
+        if (savedIsPlaying !== null) {
+            setIsVideoPlaying(savedIsPlaying === "true");
+        }
+    };
 
     const startPauseVideo = () => {
         if (isVideoPlaying) {
@@ -32,31 +75,36 @@ const RenderVideoCourse = ({
     };
 
     useEffect(() => {
-        const videoElement = videoRef.current;
-        const interval = setInterval(updateTime, 1000);
-        return () => {
-            clearInterval(interval);
-        };
-    }, []);
-
-    useEffect(() => {
-        if (videoRef.current) {
-            videoRef.current.pause();
-            setIsVideoPlaying(false); 
-            setCurrentTime(0); 
+        if (selectedVideoIndex !== null && selectedVideoIndex !== undefined) {
+            loadFromLocalStorage();
         }
-    }, [selectedVideoIndex]);
+    }, [selectedVideoIndex, courseId]);
 
     useEffect(() => {
         if (videoRef.current && videoUrl) {
-            videoRef.current.currentTime = 0; 
+            console.log("Setting video currentTime:", currentTime);
+            videoRef.current.currentTime = currentTime;
+
             if (isVideoPlaying) {
-                videoRef.current.play(); 
+                videoRef.current.play();
             }
         }
-    }, [videoUrl, isVideoPlaying]); 
+    }, [videoUrl, isVideoPlaying, currentTime]);
 
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+    useEffect(() => {
+        return () => {
+            saveToLocalStorage();
+        };
+    }, [selectedVideoIndex, currentTime, isVideoPlaying]);
+
+    useEffect(() => {
+        const interval = setInterval(saveToLocalStorage, 1000);
+        return () => {
+            clearInterval(interval);
+        };
+    }, [currentTime, isVideoPlaying]);
 
     return (
         <div
@@ -77,6 +125,7 @@ const RenderVideoCourse = ({
                         height: "100%",
                         objectFit: "fill",
                     }}
+                    onTimeUpdate={updateTime}
                 />
             </div>
 

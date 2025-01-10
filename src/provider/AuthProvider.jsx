@@ -12,11 +12,11 @@ export const AuthProvider = ({ children }) => {
                 const accessToken = localStorage.getItem("access_token");
                 const result = await getCurrentUser(accessToken);
 
-                if (result.data.status !== 200) {
+                if (result.status !== 200) {
                     throw result.data.msg;
                 }
 
-                setState(result.data);
+                setState(result.data.users);
             } catch (error) {
                 console.log(error);
                 setState(null);

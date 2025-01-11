@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
     fetchCourseData,
     getSubscriptionStatus,
     subscribeToCourse,
-} from "../services/api";
+    getCurrentUser, // Import getCurrentUser
+} from "../services/api"; // Import yang diperbarui untuk getCurrentUser
 import RenderVideoCourse from "../components/RenderVideoCourse";
 import SubscribePopup from "../components/PopupSubcriber";
 import Header from "../components/Header";
@@ -29,6 +30,9 @@ function Course() {
     const [courseId] = useState(useParams().courseId);
     const [selectedPrice, setSelectedPrice] = useState(null);
     const [showSubscribePopup, setShowSubscribePopup] = useState(false);
+    const [userId, setUserId] = useState(null); // State untuk menyimpan userId
+
+    const navigate = useNavigate();
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
@@ -56,6 +60,33 @@ function Course() {
 
         fetchData();
     }, [courseId]);
+
+    // useEffect untuk mendapatkan data pengguna dan menyimpan userId
+useEffect(() => {
+    const fetchUserData = async () => {
+        const token = localStorage.getItem("access_token");
+        console.log("Token:", token);  // Verifikasi token ada atau tidak
+
+        if (!token) {
+            console.error("No token found");
+            return;
+        }
+
+        try {
+            const response = await getCurrentUser(token);
+            if (response && response.data && response.data.users && response.data.users.id) {
+                setUserId(response.data.users.id); // Menyimpan userId dari users.id ke dalam state
+                console.log("User ID:", response.data.users.id); // Menampilkan userId di console
+            } else {
+                console.error("User ID not found in response:", response);
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+        }
+    };
+
+    fetchUserData();
+}, []);
 
     const nextStep = () => {
         setStep((prevStep) => (prevStep === 2 ? 1 : prevStep + 1));
@@ -92,7 +123,7 @@ function Course() {
             // Call the subscribeToCourse function to subscribe the user
             const response = await subscribeToCourse(selectedPrice, token);
             if (response.status === 201) {
-                setIsSubscribed(true); 
+                setIsSubscribed(true);
                 setShowSubscribePopup(false);
                 alert("Subscription successful!");
             }
@@ -163,6 +194,7 @@ function Course() {
                         setCurrentTime={setCurrentTime}
                         selectedVideoIndex={selectedVideoIndex}
                         courseId={courseId} // Pass courseId here
+                        userId={userId} // Pass userId here
                     />
                 )}
                 {/* Course Details and Video List */}

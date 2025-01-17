@@ -4,8 +4,8 @@ import {
     fetchCourseData,
     getSubscriptionStatus,
     subscribeToCourse,
-    getCurrentUser, // Import getCurrentUser
-} from "../services/api"; // Import yang diperbarui untuk getCurrentUser
+    getCurrentUser, 
+} from "../services/api"; 
 import RenderVideoCourse from "../components/RenderVideoCourse";
 import SubscribePopup from "../components/PopupSubcriber";
 import Header from "../components/Header";
@@ -61,11 +61,10 @@ function Course() {
         fetchData();
     }, [courseId]);
 
-    // useEffect untuk mendapatkan data pengguna dan menyimpan userId
 useEffect(() => {
     const fetchUserData = async () => {
         const token = localStorage.getItem("access_token");
-        console.log("Token:", token);  // Verifikasi token ada atau tidak
+        console.log("Token:", token); 
 
         if (!token) {
             console.error("No token found");
@@ -75,8 +74,8 @@ useEffect(() => {
         try {
             const response = await getCurrentUser(token);
             if (response && response.data && response.data.users && response.data.users.id) {
-                setUserId(response.data.users.id); // Menyimpan userId dari users.id ke dalam state
-                console.log("User ID:", response.data.users.id); // Menampilkan userId di console
+                setUserId(response.data.users.id);
+                console.log("User ID:", response.data.users.id);
             } else {
                 console.error("User ID not found in response:", response);
             }

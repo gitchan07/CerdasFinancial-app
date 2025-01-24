@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import { AuthProvider } from "./provider/AuthProvider";
 import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
+import SubcribePage from "./pages/SubcribePage";
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                     <Route path="/home" element={<HomePage />} />
                     <Route path="/course/:courseId" element={<Course />} />
                     <Route path="/profile" element={<UserProfile />} />
+                    <Route path="/subscribe" element={<SubcribePage />} />
                     <Route path="*" element={<NotFound />} />
                 </Routes>
             </BrowserRouter>

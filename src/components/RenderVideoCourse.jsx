@@ -9,9 +9,47 @@ const RenderVideoCourse = ({
     currentTime,
     setCurrentTime,
     selectedVideoIndex,
+    courseId,
+    userId,
 }) => {
     const videoRef = useRef(null);
-    const [duration, setDuration] = useState(0); // Adding state for duration
+    const [duration, setDuration] = useState(1);
+
+    console.log(userId);
+
+    // Generate unique keys for each video based on courseId, selectedVideoIndex, and userId
+    const getLocalStorageKey = (keyType) => {
+        return `user-${userId}-course-${courseId}-video-${selectedVideoIndex}-${keyType}`;
+    };
+
+    // Save currentTime and isVideoPlaying status to localStorage
+    const saveToLocalStorage = () => {
+        if (videoRef.current) {
+            localStorage.setItem(getLocalStorageKey("currentTime"), videoRef.current.currentTime);
+            localStorage.setItem(getLocalStorageKey("isPlaying"), isVideoPlaying.toString());
+        }
+    };
+
+    // Load saved currentTime and isVideoPlaying from localStorage
+    const loadFromLocalStorage = () => {
+        const savedCurrentTime = localStorage.getItem(getLocalStorageKey("currentTime"));
+        const savedIsPlaying = localStorage.getItem(getLocalStorageKey("isPlaying"));
+
+        if (savedCurrentTime !== null) {
+            const parsedTime = parseFloat(savedCurrentTime);
+            if (!isNaN(parsedTime)) {
+                setCurrentTime(parsedTime);  // Update state with the saved time
+            } else {
+                setCurrentTime(0); // Reset to 0 if saved time is invalid
+            }
+        } else {
+            setCurrentTime(0); // No saved time, reset to 0
+        }
+
+        if (savedIsPlaying !== null) {
+            setIsVideoPlaying(savedIsPlaying === "true");
+        }
+    };
 
     const startPauseVideo = () => {
         if (isVideoPlaying) {
@@ -31,30 +69,39 @@ const RenderVideoCourse = ({
         }
     };
 
+    // Load data from localStorage whenever selectedVideoIndex, courseId, or userId changes
     useEffect(() => {
-        const videoElement = videoRef.current;
-        const interval = setInterval(updateTime, 1000);
+        if (selectedVideoIndex !== null && selectedVideoIndex !== undefined) {
+            loadFromLocalStorage();
+        }
+    }, [selectedVideoIndex, courseId, userId]);
+
+    // Set video properties and currentTime whenever videoUrl, isVideoPlaying, or currentTime changes
+    useEffect(() => {
+        if (videoRef.current && videoUrl) {
+            videoRef.current.currentTime = currentTime;
+
+            // Ensure video plays or pauses based on state
+            if (isVideoPlaying) {
+                videoRef.current.play();
+            } else {
+                videoRef.current.pause();
+            }
+        }
+    }, [videoUrl, isVideoPlaying, currentTime]); // Depend on videoUrl, isVideoPlaying, and currentTime
+
+    // Save to localStorage whenever currentTime or isVideoPlaying changes
+    useEffect(() => {
+        saveToLocalStorage();
+    }, [currentTime, isVideoPlaying]);
+
+    // Save to localStorage every 1 second to avoid losing progress
+    useEffect(() => {
+        const interval = setInterval(saveToLocalStorage, 1000);
         return () => {
             clearInterval(interval);
         };
-    }, []);
-
-    useEffect(() => {
-        if (videoRef.current) {
-            videoRef.current.pause();
-            setIsVideoPlaying(false); 
-            setCurrentTime(0); 
-        }
-    }, [selectedVideoIndex]);
-
-    useEffect(() => {
-        if (videoRef.current && videoUrl) {
-            videoRef.current.currentTime = 0; 
-            if (isVideoPlaying) {
-                videoRef.current.play(); 
-            }
-        }
-    }, [videoUrl, isVideoPlaying]); 
+    }, [currentTime, isVideoPlaying]);
 
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
@@ -77,6 +124,7 @@ const RenderVideoCourse = ({
                         height: "100%",
                         objectFit: "fill",
                     }}
+                    onTimeUpdate={updateTime}
                 />
             </div>
 

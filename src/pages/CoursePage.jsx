@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
     fetchCourseData,
     getSubscriptionStatus,
-    subscribeToCourse,
-} from "../services/api"; // Import the updated getCurrentUser
+    getCurrentUser,
+} from "../services/api"; 
 import RenderVideoCourse from "../components/RenderVideoCourse";
 import SubscribePopup from "../components/PopupSubcriber";
 import Header from "../components/Header";
@@ -21,21 +21,18 @@ function Course() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
     const [courseData, setCourseData] = useState(null);
     const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
-    const [isSubscribed, setIsSubscribed] = useState(false); // Track subscription status
+    const [isSubscribed, setIsSubscribed] = useState(false);
     const [step, setStep] = useState(1);
     const [courseId] = useState(useParams().courseId);
-    const [selectedPrice, setSelectedPrice] = useState(null);
     const [showSubscribePopup, setShowSubscribePopup] = useState(false);
+    const [userId, setUserId] = useState(null);
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
-        navigate(`/home?search=${e.target.value}`); // Redirect to HomePage with search term
     };
 
-    // Fetch course and user data
     useEffect(() => {
         const fetchData = async () => {
             const token = localStorage.getItem("access_token");
@@ -45,13 +42,11 @@ function Course() {
             }
 
             try {
-                // Fetch course data
                 const courseData = await fetchCourseData(courseId, token);
                 setCourseData(courseData);
 
-                // Fetch current user data to check subscription status
-                const isSubscribed = await getSubscriptionStatus(token); // Get subscription status
-                setIsSubscribed(isSubscribed); // Set the subscription status in state
+                const isSubscribed = await getSubscriptionStatus(token);
+                setIsSubscribed(isSubscribed);
             } catch (error) {
                 console.error("Error fetching course or user data:", error);
             }
@@ -59,6 +54,32 @@ function Course() {
 
         fetchData();
     }, [courseId]);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const token = localStorage.getItem("access_token");
+            console.log("Token:", token); 
+
+            if (!token) {
+                console.error("No token found");
+                return;
+            }
+
+            try {
+                const response = await getCurrentUser(token);
+                if (response && response.data && response.data.users && response.data.users.id) {
+                    setUserId(response.data.users.id);
+                    console.log("User ID:", response.data.users.id);
+                } else {
+                    console.error("User ID not found in response:", response);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     const nextStep = () => {
         setStep((prevStep) => (prevStep === 2 ? 1 : prevStep + 1));
@@ -76,41 +97,6 @@ function Course() {
 
         setIsVideoPlaying(false);
         setSelectedVideoIndex(index);
-    };
-
-    const handleSubscribeClick = async () => {
-        if (!selectedPrice) {
-            alert("Please select a subscription plan.");
-            return;
-        }
-
-        // Retrieve token from localStorage
-        const token = localStorage.getItem("access_token");
-
-        // Check if the token exists
-        if (!token) {
-            alert("You must be logged in to subscribe.");
-            return;
-        }
-
-        try {
-            // Call the subscribeToCourse function to subscribe the user
-            const response = await subscribeToCourse(selectedPrice, token);
-            if (response.status === 201) {
-                setIsSubscribed(true); // Set the user as subscribed
-                setShowSubscribePopup(false);
-                alert("Subscription successful!");
-            }
-        } catch (error) {
-            console.error("Error during subscription:", error);
-            if (error.response && error.response.status === 401) {
-                alert("Your session has expired. Please log in again.");
-                // Optionally, redirect the user to the login page
-                window.location.href = "/login";
-            } else {
-                alert("Subscription failed. Please try again.");
-            }
-        }
     };
 
     const renderIcon = (key) => {
@@ -144,35 +130,30 @@ function Course() {
     return (
         <div className="max-w-screen flex flex-col items-center justify-center">
             {/* Header with sticky positioning */}
-
             <div className="z-10 w-full px-10">
                 <Header
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
                     onSearchChange={handleSearchChange}
-                    className="sticky top-0 z-10 bg-white p-10" // Sticky header with background and shadow
+                    className="sticky top-0 z-10 bg-white p-10"
                 />
             </div>
 
             {/* Main content with margin to account for sticky header */}
             <div className="flex w-full flex-col items-center justify-center">
-                {" "}
-                {/* Added margin-top */}
-                {/* Video Player */}
                 {courseData && (
                     <RenderVideoCourse
-                        videoUrl={
-                            courseData?.contents?.[selectedVideoIndex]
-                                ?.video_url
-                        }
+                        videoUrl={courseData?.contents?.[selectedVideoIndex]?.video_url}
                         isVideoPlaying={isVideoPlaying}
                         setIsVideoPlaying={setIsVideoPlaying}
                         currentTime={currentTime}
                         setCurrentTime={setCurrentTime}
-                        duration={duration}
                         selectedVideoIndex={selectedVideoIndex}
+                        courseId={courseId} // Pass courseId here
+                        userId={userId} // Pass userId here
                     />
                 )}
+
                 {/* Course Details and Video List */}
                 <div className="mt-8 flex w-10/12 flex-col justify-between gap-10 text-justify lg:flex-row">
                     {/* Course Info */}
@@ -209,9 +190,8 @@ function Course() {
                                         </p>
                                         <p>
                                             {
-                                                courseData?.contents?.[
-                                                    selectedVideoIndex
-                                                ]?.description
+                                                courseData?.contents?.[selectedVideoIndex]
+                                                    ?.description
                                             }
                                         </p>
                                     </>
@@ -275,16 +255,14 @@ function Course() {
                                 <ul
                                     key={index}
                                     className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex ? "border-blue-600 bg-blue-400 text-white" : "border-blue-300 bg-blue-100 text-black"}`}
-                                    onClick={() => handleVideoSelect(index)} // Update the selected video index
+                                    onClick={() => handleVideoSelect(index)}
                                     style={{
-                                        cursor:
-                                            index >= 2 && !isSubscribed
-                                                ? "not-allowed"
-                                                : "pointer",
-                                        opacity:
-                                            index >= 2 && !isSubscribed
-                                                ? 0.5
-                                                : 1,
+                                        cursor: index >= 2 && !isSubscribed
+                                            ? "not-allowed"
+                                            : "pointer",
+                                        opacity: index >= 2 && !isSubscribed
+                                            ? 0.5
+                                            : 1,
                                     }}
                                 >
                                     <li>{video.name}</li>
@@ -299,9 +277,6 @@ function Course() {
             <SubscribePopup
                 show={showSubscribePopup}
                 setShowSubscribePopup={setShowSubscribePopup}
-                setSelectedPrice={setSelectedPrice}
-                handleSubscribeClick={handleSubscribeClick}
-                selectedPrice={selectedPrice}
             />
         </div>
     );

@@ -56,7 +56,7 @@ const Header = ({ searchTerm, setSearchTerm }) => {
 
     return (
         <header className="mb-8 flex flex-wrap items-center justify-between">
-            <Link href="#" className="flex items-center">
+            <a href="/home" className="flex items-center">
                 <img
                     src="/logo.png"
                     className="h-16 w-16 md:mr-4"
@@ -65,7 +65,7 @@ const Header = ({ searchTerm, setSearchTerm }) => {
                 <span className="hidden font-bold text-blue-900 md:inline">
                     Cerdas Financial
                 </span>
-            </Link>
+            </a>
             <div className="relative flex items-center gap-4">
                 <div className="relative">
                     <input

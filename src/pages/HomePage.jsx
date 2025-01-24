@@ -14,44 +14,10 @@ const HomePage = () => {
     const [error, setError] = useState(null);
     const [tokenExpired, setTokenExpired] = useState(false);
 
-    const [currentPage, setCurrentPage] = useState(1);
-    const [coursesPerPage, setCoursesPerPage] = useState(4);
+    const [selectedLetter, setSelectedLetter] = useState("all"); // Default value set to "all"
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""); // Alphabet array
 
-    const { user, setUser } = useAuth();
-
-    useEffect(() => {
-        const updateCoursesPerPage = () => {
-            if (window.innerWidth <= 640) {
-                setCoursesPerPage(1);
-            } else if (window.innerWidth <= 1024) {
-                setCoursesPerPage(2);
-            } else {
-                setCoursesPerPage(4);
-            }
-        };
-
-        updateCoursesPerPage();
-        window.addEventListener("resize", updateCoursesPerPage);
-
-        return () => {
-            window.removeEventListener("resize", updateCoursesPerPage);
-        };
-    }, []);
-
-    useEffect(() => {
-        const storedUser = localStorage.getItem("user");
-        const storedToken = localStorage.getItem("access_token");
-
-        if (storedUser && storedToken) {
-            const parsedUser = JSON.parse(storedUser);
-            setUser(parsedUser);
-
-            const isTokenExpired = checkTokenExpiration(storedToken);
-            if (isTokenExpired) {
-                setTokenExpired(true);
-            }
-        }
-    }, [setUser]);
+    const { user } = useAuth(); // Get user from context
 
     useEffect(() => {
         if (!user || tokenExpired) {
@@ -77,12 +43,19 @@ const HomePage = () => {
 
             try {
                 const fetchedCourses = await fetchCourses(accessToken);
-                if (fetchedCourses?.data && Array.isArray(fetchedCourses.data)) {
+                if (
+                    fetchedCourses?.data &&
+                    Array.isArray(fetchedCourses.data)
+                ) {
                     setCourses(fetchedCourses.data);
 
-                    const lastViewedCourseId = localStorage.getItem(`${user.id}_lastViewedCourseId`);
+                    const lastViewedCourseId = localStorage.getItem(
+                        `${user.id}_lastViewedCourseId`
+                    );
                     if (lastViewedCourseId) {
-                        const course = fetchedCourses.data.find(course => course.id === lastViewedCourseId);
+                        const course = fetchedCourses.data.find(
+                            (course) => course.id === lastViewedCourseId
+                        );
                         setRecentlyViewed(course || null);
                     }
                 } else {
@@ -99,41 +72,28 @@ const HomePage = () => {
         loadCourses();
     }, [user]);
 
-    const checkTokenExpiration = (token) => {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const decodedPayload = JSON.parse(atob(base64));
-
-        const currentTime = Date.now() / 1000;
-        return decodedPayload.exp < currentTime;
-    };
-
     const handleCourseClick = (courseId) => {
         localStorage.setItem(`${user.id}_lastViewedCourseId`, courseId);
     };
 
-    const filteredCourses = courses.filter(course =>
-        course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const handleLetterFilter = (letter) => {
+        setSelectedLetter(letter);
+    };
+
+    // Filter courses based on search term and selected letter (if any)
+    const filteredCourses = courses.filter((course) => {
+        const matchesSearch =
+            course.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            course.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesLetter =
+            selectedLetter === "all" || course.name.startsWith(selectedLetter);
+        return matchesSearch && matchesLetter;
+    });
+
+    // Sort filtered courses alphabetically
+    const sortedCourses = filteredCourses.sort((a, b) =>
+        a.name.localeCompare(b.name)
     );
-
-    const indexOfLastCourse = currentPage * coursesPerPage;
-    const indexOfFirstCourse = indexOfLastCourse - coursesPerPage;
-    const currentCourses = filteredCourses.slice(indexOfFirstCourse, indexOfLastCourse);
-
-    const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
-
-    const handleNext = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
-
-    const handlePrev = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error fetching data: {error}</p>;
@@ -143,36 +103,35 @@ const HomePage = () => {
     return (
         <div className="min-h-screen bg-gray-100 p-4 md:p-8">
             <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
-            <section>
-                <h2 className="mb-4 text-xl text-blue-600 font-bold">Recently Viewed</h2>
-                <div className="flex flex-wrap justify-start gap-4">
-                    {recentlyViewed ? (
-                        <Link
-                            to={`/course/${recentlyViewed.id}`}
-                            onClick={() => handleCourseClick(recentlyViewed.id)}
-                        >
-                            <Card
-                                key={recentlyViewed.id}
-                                name={recentlyViewed.name}
-                                description={recentlyViewed.description}
-                                progress={recentlyViewed.progress || 0}
-                                total={recentlyViewed.total || 1}
-                                imageUrl={recentlyViewed.img_banner || "https://via.placeholder.com/300x200"}
-                                progressText={`${recentlyViewed.progress || 0}/${recentlyViewed.total || 1}`}
-                                showProgress={true}
-                            />
-                        </Link>
-                    ) : (
-                        <p>No recently viewed courses</p>
-                    )}
-                </div>
-            </section>
 
             <section>
-                <h2 className="mb-4 mt-8 text-xl text-blue-600 font-bold">NEW COURSE</h2>
-                <div className="flex flex-wrap justify-start gap-4">
-                    {currentCourses.length > 0 ? (
-                        currentCourses.map((course) => (
+                <h2 className="mb-12 mt-12 flex justify-center text-2xl font-bold text-blue-600">
+                    COURSE
+                </h2>
+
+                {/* Alphabet Filter */}
+                <div className="mb-12 flex flex-wrap justify-center gap-2">
+                    <button
+                        className={`m-1 rounded px-3 py-1 ${selectedLetter === "all" ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-800"}`}
+                        onClick={() => handleLetterFilter("all")}
+                    >
+                        All
+                    </button>
+                    {alphabet.map((letter) => (
+                        <button
+                            key={letter}
+                            className={`m-1 rounded px-3 py-1 ${selectedLetter === letter ? "bg-blue-500 text-white" : "bg-gray-200 text-gray-800"}`}
+                            onClick={() => handleLetterFilter(letter)}
+                        >
+                            {letter}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Courses Display */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 justify-items-center">
+                    {sortedCourses.length > 0 ? (
+                        sortedCourses.map((course) => (
                             <Link
                                 to={`/course/${course.id}`}
                                 onClick={() => handleCourseClick(course.id)}
@@ -192,26 +151,6 @@ const HomePage = () => {
                     ) : (
                         <p>No courses found</p>
                     )}
-                </div>
-
-                <div className="flex justify-between items-center mt-4">
-                    <button
-                        className="px-4 py-2 bg-blue-500 text-white rounded"
-                        onClick={handlePrev}
-                        disabled={currentPage === 1}
-                    >
-                        Prev
-                    </button>
-                    <span>
-                        Page {currentPage} of {totalPages}
-                    </span>
-                    <button
-                        className="px-4 py-2 bg-blue-500 text-white rounded"
-                        onClick={handleNext}
-                        disabled={currentPage === totalPages}
-                    >
-                        Next
-                    </button>
                 </div>
             </section>
         </div>

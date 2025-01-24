@@ -6,9 +6,8 @@ This is a React project bootstrapped with Vite.
 
 First, install the dependencies:
 
-bash
-Salin
-Edit
+```bash
+
 npm install
 # or
 yarn install

@@ -100,12 +100,16 @@ const HomePage = () => {
     }, [user]);
 
     const checkTokenExpiration = (token) => {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const decodedPayload = JSON.parse(atob(base64));
-
-        const currentTime = Date.now() / 1000;
-        return decodedPayload.exp < currentTime;
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const decodedPayload = JSON.parse(atob(base64));
+            const currentTime = Date.now() / 1000;
+            return decodedPayload.exp < currentTime;
+        } catch (error) {
+            console.error("Error decoding token", error);
+            return true;
+        }
     };
 
     const handleCourseClick = (courseId) => {

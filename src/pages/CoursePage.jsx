@@ -3,8 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
     fetchCourseData,
     getSubscriptionStatus,
-    subscribeToCourse,
-    getCurrentUser, 
+    getCurrentUser,
 } from "../services/api"; 
 import RenderVideoCourse from "../components/RenderVideoCourse";
 import SubscribePopup from "../components/PopupSubcriber";
@@ -22,21 +21,16 @@ function Course() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isVideoPlaying, setIsVideoPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
     const [courseData, setCourseData] = useState(null);
     const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
     const [isSubscribed, setIsSubscribed] = useState(false);
     const [step, setStep] = useState(1);
     const [courseId] = useState(useParams().courseId);
-    const [selectedPrice, setSelectedPrice] = useState(null);
     const [showSubscribePopup, setShowSubscribePopup] = useState(false);
-    const [userId, setUserId] = useState(null); // State untuk menyimpan userId
-
-    const navigate = useNavigate();
+    const [userId, setUserId] = useState(null);
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
-        navigate(`/home?search=${e.target.value}`);
     };
 
     useEffect(() => {
@@ -61,31 +55,31 @@ function Course() {
         fetchData();
     }, [courseId]);
 
-useEffect(() => {
-    const fetchUserData = async () => {
-        const token = localStorage.getItem("access_token");
-        console.log("Token:", token); 
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const token = localStorage.getItem("access_token");
+            console.log("Token:", token); 
 
-        if (!token) {
-            console.error("No token found");
-            return;
-        }
-
-        try {
-            const response = await getCurrentUser(token);
-            if (response && response.data && response.data.users && response.data.users.id) {
-                setUserId(response.data.users.id);
-                console.log("User ID:", response.data.users.id);
-            } else {
-                console.error("User ID not found in response:", response);
+            if (!token) {
+                console.error("No token found");
+                return;
             }
-        } catch (error) {
-            console.error("Error fetching user data:", error);
-        }
-    };
 
-    fetchUserData();
-}, []);
+            try {
+                const response = await getCurrentUser(token);
+                if (response && response.data && response.data.users && response.data.users.id) {
+                    setUserId(response.data.users.id);
+                    console.log("User ID:", response.data.users.id);
+                } else {
+                    console.error("User ID not found in response:", response);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     const nextStep = () => {
         setStep((prevStep) => (prevStep === 2 ? 1 : prevStep + 1));
@@ -103,38 +97,6 @@ useEffect(() => {
 
         setIsVideoPlaying(false);
         setSelectedVideoIndex(index);
-    };
-
-    const handleSubscribeClick = async () => {
-        if (!selectedPrice) {
-            alert("Please select a subscription plan.");
-            return;
-        }
-
-        const token = localStorage.getItem("access_token");
-
-        if (!token) {
-            alert("You must be logged in to subscribe.");
-            return;
-        }
-
-        try {
-            // Call the subscribeToCourse function to subscribe the user
-            const response = await subscribeToCourse(selectedPrice, token);
-            if (response.status === 201) {
-                setIsSubscribed(true);
-                setShowSubscribePopup(false);
-                alert("Subscription successful!");
-            }
-        } catch (error) {
-            console.error("Error during subscription:", error);
-            if (error.response && error.response.status === 401) {
-                alert("Your session has expired. Please log in again.");
-                window.location.href = "/login";
-            } else {
-                alert("Subscription failed. Please try again.");
-            }
-        }
     };
 
     const renderIcon = (key) => {
@@ -168,7 +130,6 @@ useEffect(() => {
     return (
         <div className="max-w-screen flex flex-col items-center justify-center">
             {/* Header with sticky positioning */}
-
             <div className="z-10 w-full px-10">
                 <Header
                     searchTerm={searchTerm}
@@ -180,13 +141,9 @@ useEffect(() => {
 
             {/* Main content with margin to account for sticky header */}
             <div className="flex w-full flex-col items-center justify-center">
-                {" "}
                 {courseData && (
                     <RenderVideoCourse
-                        videoUrl={
-                            courseData?.contents?.[selectedVideoIndex]
-                                ?.video_url
-                        }
+                        videoUrl={courseData?.contents?.[selectedVideoIndex]?.video_url}
                         isVideoPlaying={isVideoPlaying}
                         setIsVideoPlaying={setIsVideoPlaying}
                         currentTime={currentTime}
@@ -196,6 +153,7 @@ useEffect(() => {
                         userId={userId} // Pass userId here
                     />
                 )}
+
                 {/* Course Details and Video List */}
                 <div className="mt-8 flex w-10/12 flex-col justify-between gap-10 text-justify lg:flex-row">
                     {/* Course Info */}
@@ -232,9 +190,8 @@ useEffect(() => {
                                         </p>
                                         <p>
                                             {
-                                                courseData?.contents?.[
-                                                    selectedVideoIndex
-                                                ]?.description
+                                                courseData?.contents?.[selectedVideoIndex]
+                                                    ?.description
                                             }
                                         </p>
                                     </>
@@ -300,14 +257,12 @@ useEffect(() => {
                                     className={`rounded-lg border-2 p-2 ${index === selectedVideoIndex ? "border-blue-600 bg-blue-400 text-white" : "border-blue-300 bg-blue-100 text-black"}`}
                                     onClick={() => handleVideoSelect(index)}
                                     style={{
-                                        cursor:
-                                            index >= 2 && !isSubscribed
-                                                ? "not-allowed"
-                                                : "pointer",
-                                        opacity:
-                                            index >= 2 && !isSubscribed
-                                                ? 0.5
-                                                : 1,
+                                        cursor: index >= 2 && !isSubscribed
+                                            ? "not-allowed"
+                                            : "pointer",
+                                        opacity: index >= 2 && !isSubscribed
+                                            ? 0.5
+                                            : 1,
                                     }}
                                 >
                                     <li>{video.name}</li>
@@ -322,9 +277,6 @@ useEffect(() => {
             <SubscribePopup
                 show={showSubscribePopup}
                 setShowSubscribePopup={setShowSubscribePopup}
-                setSelectedPrice={setSelectedPrice}
-                handleSubscribeClick={handleSubscribeClick}
-                selectedPrice={selectedPrice}
             />
         </div>
     );

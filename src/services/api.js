@@ -110,3 +110,16 @@ export const getSubscriptionStatus = async (token) => {
         throw error;
     }
 };
+
+export const getSubscribeType = async (token) => {
+    try {
+        const response = await api.get('/subscribe/type', {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data; // Mengembalikan data response
+    } catch (error) {
+        throw new Error('Error fetching subscribe type: ' + error.message);
+    }
+};

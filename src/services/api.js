@@ -102,8 +102,10 @@ export const getSubscriptionStatus = async (token) => {
         });
 
         // Extracting the `is_subscribe` value from the response
-        const isSubscribed = response.data.users.is_subscribe === 1; // Assuming 1 means subscribed
+        const isSubscribed = response.data.users.is_susbscribe === 1; // Assuming 1 means subscribed
 
+        // console.log("User is subscribed:", isSubscribed);
+        // console.log("Response:", response.data.users);
         return isSubscribed;
     } catch (error) {
         console.error("Error fetching user data:", error);
@@ -123,3 +125,18 @@ export const getSubscribeType = async (token) => {
         throw new Error('Error fetching subscribe type: ' + error.message);
     }
 };
+
+
+export const subcribeMidtrans = async (token, data) => { 
+    try {
+        const response = await api.post('/subscribe/midtrans', data, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        // console.log('Response:', response.data);
+        return response.data; 
+    } catch (error) {
+        throw new Error('Error subscribing: ' + error.message);
+    }
+}

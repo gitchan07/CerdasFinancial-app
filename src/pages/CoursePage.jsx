@@ -45,6 +45,8 @@ function Course() {
                 const courseData = await fetchCourseData(courseId, token);
                 setCourseData(courseData);
 
+                console.log("Course Data:", courseData);
+                
                 const isSubscribed = await getSubscriptionStatus(token);
                 setIsSubscribed(isSubscribed);
             } catch (error) {

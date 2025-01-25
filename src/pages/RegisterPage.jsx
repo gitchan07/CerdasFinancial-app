@@ -10,6 +10,8 @@ const RegisterPage = () => {
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const navigate = useNavigate();
 
@@ -111,29 +113,57 @@ const RegisterPage = () => {
                                 <label className="block text-sm font-medium text-gray-700">
                                     Password
                                 </label>
-                                <input
-                                    type="password"
-                                    className="mt-2 block w-full rounded-md border bg-white px-4 py-3 text-base focus:border-blue-500 focus:ring-blue-500"
-                                    value={password}
-                                    onChange={(e) =>
-                                        setPassword(e.target.value)
-                                    }
-                                    required
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        className="mt-2 block w-full rounded-md border bg-white px-4 py-3 text-base focus:border-blue-500 focus:ring-blue-500"
+                                        value={password}
+                                        onChange={(e) =>
+                                            setPassword(e.target.value)
+                                        }
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600"
+                                        onClick={() =>
+                                            setShowPassword(!showPassword)
+                                        }
+                                    >
+                                        {showPassword ? "Hide" : "Show"}
+                                    </button>
+                                </div>
                             </div>
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700">
                                     Confirm Password
                                 </label>
-                                <input
-                                    type="password"
-                                    className="mt-2 block w-full rounded-md border bg-white px-4 py-3 text-base focus:border-blue-500 focus:ring-blue-500"
-                                    value={confirmPassword}
-                                    onChange={(e) =>
-                                        setConfirmPassword(e.target.value)
-                                    }
-                                    required
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={
+                                            showConfirmPassword
+                                                ? "text"
+                                                : "password"
+                                        }
+                                        className="mt-2 block w-full rounded-md border bg-white px-4 py-3 text-base focus:border-blue-500 focus:ring-blue-500"
+                                        value={confirmPassword}
+                                        onChange={(e) =>
+                                            setConfirmPassword(e.target.value)
+                                        }
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600"
+                                        onClick={() =>
+                                            setShowConfirmPassword(
+                                                !showConfirmPassword
+                                            )
+                                        }
+                                    >
+                                        {showConfirmPassword ? "Hide" : "Show"}
+                                    </button>
+                                </div>
                             </div>
                             <button
                                 type="submit"

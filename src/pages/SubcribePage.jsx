@@ -6,56 +6,61 @@ import Header from "../components/Header";
 function SubscribePage() {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
-    const [subscribeTypes, setSubscribeTypes] = useState([]); // Inisialisasi dengan array kosong
+    const [subscribeTypes, setSubscribeTypes] = useState(null);
     const [selectedPrice, setSelectedPrice] = useState(null);
-    const [selectedDuration, setSelectedDuration] = useState(null);
-    const [error, setError] = useState(null);
+    const [subcribeId, setSubcribeId] = useState("");
 
-    // Handle perubahan input pencarian
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
     };
 
-    // Handle pemilihan harga dan durasi
-    const handleSelectPrice = (price, duration) => {
+    const handleSelectPrice = (price, subscribe_id) => {
         setSelectedPrice(price);
-        setSelectedDuration(duration);
+        setSubcribeId(subscribe_id);
     };
 
-    // Handle klik subscribe
-    const handleSubscribeClick = () => {
-        if (selectedPrice && selectedDuration) {
-            // Logika untuk melanjutkan subscribe atau tindakan lain
-            console.log(
-                `Subscribed to plan with price ${selectedPrice} and duration ${selectedDuration} months.`
-            );
+    const handleSubscribeClick = (subscribe_id) => {
+        // console.log("Subscribe ID:", subscribe_id);
+        console.log("Subscribed with ID:", subscribe_id);
+
+    };
+
+    const handleCancelClick = () => {
+        navigate(-1);
+    };
+
+    const token = localStorage.getItem("access_token");
+
+    const fetchData = async () => {
+        try {
+            const response = await getSubscribeType(token);
+            const data = response.data.map((item) => ({
+                id: item.id,
+                price: item.price,
+                duration: item.duration,
+            }));
+            setSubscribeTypes(data);
+        } catch (err) {
+            console.error("Error fetching subscription data:", err);
+            setSubscribeTypes([]);
         }
     };
 
-    // Handle klik cancel
-    const handleCancelClick = () => {
-        navigate(-1); // Kembali ke halaman sebelumnya
-    };
-
-    // Ambil data subscribe type ketika komponen dimuat
     useEffect(() => {
-        const token = localStorage.getItem("access_token"); // Gantilah dengan token yang sesuai
-        const fetchData = async () => {
-            try {
-                const response = await getSubscribeType(token);
-                // Pastikan response.data ada dan merupakan array
-                setSubscribeTypes(Array.isArray(response.data) ? response.data : []);
-            } catch (err) {
-                setError("Error fetching subscription data.");
-                setSubscribeTypes([]); // Set empty array jika error
-            }
-        };
-
         fetchData();
     }, []);
 
+    // Memantau perubahan subscribeTypes
+    useEffect(() => {
+        if (subscribeTypes) {
+            console.log("Updated Subscribe Types:", subscribeTypes);
+        }
+    }, [subscribeTypes]);
+
+    
+
     return (
-        <div className="min-h-screen w-full px-4 ">
+        <div className="min-h-screen w-full px-4">
             <div className="z-10 w-full px-10">
                 <Header
                     searchTerm={searchTerm}
@@ -70,7 +75,7 @@ function SubscribePage() {
                     Choose Your Subscription Plan
                 </h3>
                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
-                    {(subscribeTypes && subscribeTypes.length > 0) ? ( // Pengecekan tambahan
+                    {subscribeTypes && subscribeTypes.length > 0 ? (
                         subscribeTypes.map((item) => (
                             <div
                                 key={item.id}
@@ -78,26 +83,36 @@ function SubscribePage() {
                                     selectedPrice === item.price
                                         ? "border-4 border-blue-500"
                                         : "border-2 border-gray-300"
-                                } h-[600px]`} // Memperpanjang tinggi card
-                                onClick={() =>
-                                    handleSelectPrice(item.price, item.duration)
-                                }
+                                } h-[600px]`}
+                                onClick={() => handleSelectPrice(item.price, item.id)}
                             >
-                                <div className="absolute bottom-0 left-0 flex w-full h-96 flex-col items-center justify-center bg-gradient-to-t from-gray-900 via-gray-600 px-6 py-6 text-white">
+                                <div className="absolute bottom-0 left-0 flex h-96 w-full flex-col items-center justify-center bg-gradient-to-t from-gray-900 via-gray-600 px-6 py-6 text-white">
                                     <h4 className="text-xl font-bold">
                                         Plan {item.duration} months
                                     </h4>
                                     <p className="mb-4 text-sm">
-                                        Subscription for {item.duration} months with all features.
+                                        Subscription for {item.duration} months
+                                        with all features.
                                     </p>
                                     <ul className="space-y-1 text-xs">
-                                        {/* Assuming the perks are passed */}
-                                        {item.perks?.map((perk, idx) => (
-                                            <li key={idx} className="flex items-center">
-                                                <span className="text-green-400">✔</span>{" "}
-                                                {perk}
-                                            </li>
-                                        ))}
+                                        <li className="flex items-center">
+                                            <span className="text-green-400">
+                                                ✔
+                                            </span>
+                                            Full Access
+                                        </li>
+                                        <li>
+                                            <span className="text-green-400">
+                                                ✔
+                                            </span>
+                                            Unlimited Access
+                                        </li>
+                                        <li>
+                                            <span className="text-green-400">
+                                                ✔
+                                            </span>
+                                            HD Quality
+                                        </li>
                                     </ul>
                                     <p className="absolute bottom-5 text-lg font-semibold">
                                         {item.duration} Months
@@ -109,14 +124,16 @@ function SubscribePage() {
                             </div>
                         ))
                     ) : (
-                        <div className="text-center text-gray-600">Loading...</div>
+                        <div className="text-center text-gray-600">
+                            Loading...
+                        </div>
                     )}
                 </div>
             </div>
 
-            <div className="actions mt-8 flex justify-center gap-4 flex-row-reverse">
+            <div className="actions mt-8 flex flex-row-reverse justify-center gap-4">
                 <button
-                    onClick={handleSubscribeClick}
+                    onClick={handleSubscribeClick(subcribeId)}
                     className="w-full rounded-lg bg-indigo-600 px-6 py-3 font-semibold text-white shadow-md transition hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 md:w-auto"
                 >
                     Subscribe

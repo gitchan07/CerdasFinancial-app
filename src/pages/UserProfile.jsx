@@ -47,7 +47,7 @@ function UserProfile() {
         <div className="min-h-screen bg-gray-100 p-4 md:p-8">
             <Header searchTerm={""} setSearchTerm={() => {}} />
             <div className="flex justify-between">
-                <aside className="w-2/5 pr-8 pl-6 flex flex-col items-center mt-10">
+                <aside className="w-2/5 pr-8 pl-6 flex flex-col items-center mt-20"> {/* Adjust the margin-top here */}
                     <div className="flex items-center mb-6">
                         <div className="relative">
                             <div className="w-32 h-32 bg-gray-300 rounded-full flex items-center justify-center">
@@ -107,6 +107,12 @@ function UserProfile() {
                         </div>
                     </div>
                     <ul className="space-y-6 text-2xl">
+                        <li>
+                            Email:{" "}
+                            <span className="font-bold">
+                                {userData.email || "No data"}
+                            </span>
+                        </li>
                         <li>
                             Subscription:{" "}
                             <span className="font-bold">
